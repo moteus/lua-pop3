@@ -1,0 +1,200 @@
+local lunatest = require "lunatest"
+local pop3 = require "pop3"
+require "utils"
+
+function test_message_1()
+  local file_dir = path_join('tests','test1')
+  local msg = load_msg_file(path_join(file_dir, 'test.eml'))
+
+  -- quoted-printable text
+  -- base64 objects
+  -- eol
+  
+  assert_equal(msg:charset(), 'windows-1251')
+  assert_equal(msg:subject(), 'Äëÿ ñëóæáû ïåðñîíàëà (Êîíôåðåíöèÿ)')
+  assert_equal(msg:from(), '"HR Capital" <dimitry@hr-capital.ru>')
+  assert_equal(msg:to(), '"info" <info@some.mail.domain.ru>')
+  assert_true(is_equal(msg:from_list(), 
+    {{name='"HR Capital"';addr='dimitry@hr-capital.ru'}}
+  ), 'from list' )
+  assert_true(is_equal(msg:to_list(), 
+    {{name='"info"';addr='info@some.mail.domain.ru'}}
+  ), 'to list' )
+  assert_nil(msg:reply_list())
+  assert_true(is_equal({msg:from_address()}, {msg:reply_address()}), 'if replay nil then replay - from')
+
+  assert_equal(#msg:text(), 2)
+  assert_str_file( msg:text()[1].text, path_join(file_dir, 'text.txt') , 'quoted-printable decoding text/plain')
+  assert_str_file( msg:text()[2].text, path_join(file_dir, 'text.html'), 'quoted-printable decoding text/html')
+
+  assert_equal(#msg:objects(), 4, 'number of binary objects')
+  assert_equal(#msg:attachments(), 1, 'number of attachment files')
+
+  for _, attach in ipairs( msg:objects() ) do
+    assert_str_file(attach.data, path_join(file_dir, attach.file_name), 'base64 binary :' .. attach.file_name )
+  end
+
+  -- set the end-of-line marker to UNIX
+  msg:set_eol('\n')
+  assert_equal(msg:eol(), '\n')
+  -- now text does not equal ...
+  assert_not_str_file( msg:text()[1].text, path_join(file_dir, 'text.txt') , 'quoted-printable decoding text/plain with different eol')
+  assert_not_str_file( msg:text()[2].text, path_join(file_dir, 'text.html'), 'quoted-printable decoding text/html with different eol')
+
+  assert_true(cmp_lines(
+    str_line_iter(msg:text()[1].text, msg:eol()),
+    file_line_iter(path_join(file_dir, 'text.txt'), '\r\n')
+  ))
+  assert_true(cmp_lines(
+    str_line_iter(msg:text()[2].text, msg:eol()),
+    file_line_iter(path_join(file_dir, 'text.html'), '\r\n')
+  ))
+  -- but binary still equal
+  for _, attach in ipairs( msg:objects() ) do
+    assert_str_file(attach.data, path_join(file_dir, attach.file_name), 'base64 binary :' .. attach.file_name )
+  end
+
+  -- change output code page
+  msg:set_cp("866")
+  assert_equal(msg:subject(), '„«ï á«ã¦¡ë ¯¥àá®­ «  (Š®­ä¥à¥­æ¨ï)', 'work only with iconv')
+
+end
+
+function test_message_2()
+  local file_dir = path_join('tests','test2')
+  local msg = load_msg_file(path_join(file_dir, 'test.eml'))
+  -- plain text
+  -- plain html
+  -- multiple headers
+  -- header vlues and params
+
+  assert_equal( #msg:text(), 2 )
+  assert_str_file( msg:text()[1].text,  path_join(file_dir, 'text.txt') , 'plain text/plain')
+  assert_str_file( msg:text()[2].text,  path_join(file_dir, 'text.html'), 'plain text/html')
+  assert_equal( #msg.headers:headers('received'), 7)
+  assert_nil( msg.headers:value('SOME_HEADER_THAT_DOES_NOT_EXISTS'))
+  assert_equal( msg.headers:value('x-spam-flag2999'), 'NO', 'get header value')
+  assert_equal( msg.headers:value('x-spam-flag2999'), msg.headers:value('X-SPAM-FLAG2999'), 'header name case sensyvity')
+  assert_equal( msg.headers:param('content-type', 'boundary'), "b1_aea1838717659e8f3203cc99e1406622", 'get header param via headers')
+  assert_equal( msg.headers:header('content-type'):param('boundary'), "b1_aea1838717659e8f3203cc99e1406622", 'get header param via header')
+  assert_equal( msg.headers:header('content-type'), msg:header('content-type'), 'get header via mime')
+end
+
+function test_pop3_cmd()
+  local test_session = {
+    o = {"+OK POP"};
+    i = {
+      {"CMD 1\r\n";"+OK"};
+      {"CMD 2\r\n";"+"};
+      {"CMD 3\r\n";"-ERR"};
+      {"CMD 4\r\n";"-"};
+      {"CMD 5\r\n";"ERR"};
+      {"CMD 6\r\n";"OK"};
+      {"QUIT\r\n";"+OK"};
+    };
+  }
+
+  local mbox = pop3.new(new_test_server(test_session))
+  mbox:open('127.0.0.1', '110')
+  assert_true (mbox:cmd("CMD 1"))
+  assert_true (mbox:cmd("CMD 2"))
+  assert_false(mbox:cmd("CMD 3"))
+  assert_false(mbox:cmd("CMD 4"))
+  assert_nil  (mbox:cmd("CMD 5"))
+  assert_nil  (mbox:cmd("CMD 6"))
+  assert_error(function() mbox:stat() end)
+  assert_true (mbox:close())
+end
+
+function test_pop3_auth()
+  local test_session = {
+    o = {"+OK POP"};
+    i = {
+      {"USER username\r\n";"+OK password, please."};
+      {"PASS password\r\n";"+OK 10 51511"};
+      {"QUIT\r\n";"+OK"};
+    };
+  }
+
+  local mbox = pop3.new(new_test_server(test_session))
+  assert_error( function () mbox:auth('username','password') end )
+  assert_true ( mbox:open())
+  assert_error( function () mbox:stat() end )
+  assert_true ( mbox:auth('username','password') )
+  assert_true ( mbox:is_auth() )
+  assert_error( function () mbox:auth('username','password') end )
+
+end
+
+function test_pop3_auth_apop()
+  local test_session = {
+    o = {"+OK POP3 server ready <1896.697170952@dbc.mtview.ca.us>"};
+    i = {
+      {"APOP mrose c4c9334bac560ecc979e58001b3e22fb\r\n";
+      "+OK maildrop has 1 message (369 octets)"};
+    };
+  }
+
+  local mbox = pop3.new(new_test_server(test_session))
+  assert_true ( mbox:open())
+  assert_true ( mbox:auth_apop('mrose','tanstaaf') )
+
+end
+
+function test_pop3_capa()
+  local test_session = {
+    o = {"+OK POP Ya! v1.0.0na@2 <IbeYKj57Sa61>"};
+    i = {
+      {"CAPA\r\n";{"+OK Capability list follows";
+        "SASL LOGIN PLAIN CRAM-MD5 DIGEST-MD5 GSSAPI MSN NTLM";
+        "STLS";
+        "TOP";
+        "USER";
+        "LOGIN-DELAY 60";
+        "PIPELINING";
+        "EXPIRE NEVER";
+        "UIDL";
+        "RESP-CODE";
+        "AUTH-RESP-CODE";
+        "IMPLEMENTATION Yandex";
+        "STLS";
+        ".";
+      }};
+      {"QUIT\r\n";"+OK shutting down.";}
+    };
+  }
+
+  local mbox = pop3.new(new_test_server(test_session))
+  mbox:open('127.0.0.1', '110')
+  assert_true(mbox:is_open(), 'connect to server')
+  assert_true(mbox:has_apop(), 'server support apop')
+  assert_false(mbox:is_auth())
+  local capa_list = mbox:capa()
+  assert_true(is_equal(capa_list, {
+    EXPIRE = "NEVER", APOP = true, USER = true,
+    UIDL = true, TOP = true, STLS = true, PIPELINING = true, 
+    ["RESP-CODE"] = true, ["AUTH-RESP-CODE"] = true,
+    IMPLEMENTATION = "Yandex", ["LOGIN-DELAY"] = "60",
+    SASL = {
+      LOGIN = true; PLAIN = true;  MSN = true; GSSAPI = true; 
+      ["DIGEST-MD5"] = true; ["CRAM-MD5"] = true; NTLM = true;
+    }
+  }),'capa list')
+  assert_true(mbox:close())
+
+  local test_session = {
+    o = {"+OK POP Ya! v1.0.0na@2 IbeYKj57Sa61"};
+    i = {
+      {"CAPA\r\n";"-ERR Invalid command in current state."};
+    }
+  }
+
+  local mbox = pop3.new(new_test_server(test_session))
+  assert_true( mbox:open('127.0.0.1', '110') )
+  assert_false( mbox:has_apop() )
+  assert_false( mbox:capa() )
+
+end
+
+
+lunatest.run(true)
