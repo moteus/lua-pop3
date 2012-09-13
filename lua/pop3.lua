@@ -1,6 +1,48 @@
 ---
 -- POP3 client library for Lua
+-- @module pop3
 --
+
+--- Connect to server.
+-- Internal function. By default used luasocket.connect.
+-- User can provide custom function. 
+-- Create new `Connection` object and connect to server
+-- @function connect 
+-- @param host
+-- @param port
+-- @return `Connection` object that can be used for send/recive data.
+-- @see new
+
+--- 
+-- Internal type that used by `pop3` object.
+-- This type can be provided by user via custom @{pop3.connect|connect} function.
+-- @type Connection
+
+--- Recive data.
+--
+-- @function Connection:receive
+-- @param pattern - must support only "*l" pattern
+-- @return string - retrun recived string without eol
+
+--- Send data.
+--
+-- @function Connection:send
+-- @param msg - string to send
+-- @return not false
+
+--- Set timeout to io functions.
+-- 
+-- @function Connection:settimeout
+-- @param tm - timeout to io functions in seconds
+-- @return not false
+
+--- Close and destroy `Connection` object.
+--
+-- @function Connection:close
+-- 
+-- @return not false
+
+--- @section end -- Connection
 
 local _, message = pcall(require, "pop3.message")
 
@@ -100,7 +142,6 @@ if socket then
       local ok,err = scnn:dohandshake()
       if not ok then
         scnn:close()
-        self:close()
         return nil,err
       end
       return scnn
@@ -110,6 +151,7 @@ if socket then
 end
 
 ---
+-- @local 
 -- @return true  
 -- @return false - error execute command
 -- @return nil   - error parse response
@@ -133,6 +175,9 @@ local function split_1_number(data)
   local n1,s= string.match(data, "%s*(%S+)%s*(%S*)")
   return tonumber(n1),s
 end
+
+---
+-- @type pop3
 
 local pop3 = {}
 pop3.__index = pop3
@@ -169,6 +214,12 @@ function pop3:open_with(cnn_fn, host, port, timeout)
   return true
 end
 
+--- Open new session with POP3 server.
+-- 
+-- @param host
+-- @param port
+-- @param timeout
+-- return true if session established
 function pop3:open(...)
   return self:open_with(self.cnn_fn_ or default_connect, ...)
 end
@@ -181,6 +232,10 @@ end
 
 end
 
+--- Close session with POP3 server.
+-- Try send QUIT command and close connection
+--
+-- @return nothing if session not opened otherwise true
 function pop3:close()
   if self.close_progress_ then return end
   if not self:is_open() then  return  end
@@ -254,10 +309,14 @@ end
 
 -- object and server info
 
+--- 
+-- @return true if session is opened otherwise false
 function pop3:is_open()
   return self.cnn ~= nil
 end
 
+--- 
+-- @return true if session transaction stage otherwise false
 function pop3:is_auth()
   return self.is_auth_ == true
 end
@@ -266,6 +325,8 @@ function pop3:is_secure()
   return self.is_secure_
 end
 
+--- 
+-- @return true if session support apop authentication otherwise false
 function pop3:has_apop()
   assert(self:is_open())
   if self.apop_nonce then return true end
@@ -274,6 +335,9 @@ end
 
 -- auth
 
+--- POP3 authentication.
+-- 
+-- return true if authentication passed
 function pop3:auth(username, password)
   assert(not self:is_auth())
   local ok, err = self:cmd("USER",username)
@@ -284,6 +348,11 @@ function pop3:auth(username, password)
 end
 
 if md5_digest then
+
+--- POP3 APOP authentication.
+-- Supports only if detected md5 digest function
+--
+-- return true if authentication passed
 function pop3:auth_apop(username, password)
   assert(not self:is_auth())
   assert(self.apop_nonce)
@@ -354,6 +423,8 @@ end
 
 -- commands
 
+---
+--
 function pop3:stat()
   assert(self:is_auth())
   local ok, err = self:cmd("STAT")
@@ -365,23 +436,31 @@ function pop3:stat()
   return count, size 
 end
 
+---
+--
 function pop3:noop()
   assert(self:is_auth())
   return self:cmd("NOOP")
 end
 
+---
+--
 function pop3:dele(msgid)
   assert(self:is_auth())
   assert(msgid)
   return self:cmd("DELE",msgid)
 end
 
+---
+--
 function pop3:rset(msgid)
   assert(self:is_auth())
   assert(msgid)
   return self:cmd("RSET",msgid)
 end
 
+---
+--
 function pop3:list(msgid)
   assert(self:is_auth())
 
@@ -410,6 +489,8 @@ function pop3:list(msgid)
   return t, i
 end
 
+---
+--
 function pop3:uidl(msgid)
   assert(self:is_auth())
 
@@ -439,12 +520,16 @@ function pop3:uidl(msgid)
   return t, i
 end
 
+---
+--
 function pop3:retr(msgid)
   assert(self:is_auth())
   assert(msgid)
   return self:cmd_ex("RETR",msgid)
 end
 
+---
+--
 function pop3:top(msgid, n)
   assert(self:is_auth())
   assert(msgid)
@@ -452,6 +537,8 @@ function pop3:top(msgid, n)
   return self:cmd_ex("TOP", msgid, n)
 end
 
+---
+--
 function pop3:capa()
   assert(self:is_open())
   local capas = {}
@@ -485,11 +572,15 @@ end
 
 -- Retrive message object
 if message then
+
+---
+--
 function pop3:message(msgid)
   local msg, err = self:retr(msgid)
   if not msg then return nil, err end
   return message(msg)
 end
+
 end
 
 -- iterators
@@ -521,24 +612,39 @@ function pop3:make_iter(fn)
   return iter
 end
 
+---
+--
 function pop3:retrs()
   return self:make_iter(self.retr)
 end
 
+---
+--
 function pop3:tops(n)
   return self:make_iter(function(self, msgid)
     return self:top(msgid, n)
   end)
 end
 
+---
+--
 function pop3:messages()
   return self:make_iter(self.message)
 end
 
-module(...)
+--- @section end
+local M = {}
 
-function new(...)
+--- Create new `pop3` object.
+--
+-- @function pop3.new
+-- @param conn_ctor - connection constructor
+-- @treturn pop3 object
+-- @see connect
+function M.new(...)
   return pop3:new(...)
 end
 
-return _M
+M.message = message
+
+return M

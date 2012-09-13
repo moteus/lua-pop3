@@ -46,18 +46,18 @@ local function self_test(_M)
   end
 end
 
-module('CP')
+local M = {}
 
-function supported(to, from)
-  return _M[to][from] ~= pass_thrue
+function M.supported(to, from)
+  return M[to][from] ~= pass_thrue
 end
 
-function convert(to, from, str)
-  return _M[to][from](str)
+function M.convert(to, from, str)
+  return M[to][from](str)
 end
 
-setmeta(_M, meta)
+setmeta(M, meta)
 
-self_test(_M)
+self_test(M)
 
-return _M
+return M

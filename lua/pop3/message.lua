@@ -5,27 +5,25 @@ local CP              = DEFAULT_CP_CONV
 
 local DECODERS = {
   ['base64'] = function(nl) 
-    local eol_normalize
-    if nl and nl ~= CRLF then
-      eol_normalize = function(msg) return mime.eol(0, msg, nl) end
-    end
-    return socket_ltn12.filter.chain(
+    local t = {
       -- socket_mime.normalize(), -- decode_content alwas set CRLF for this
       function(msg) return mime.unb64('', msg) end,
-      eol_normalize
-    )
+    }
+    if nl and nl ~= CRLF then
+      table.insert(t, function(msg) return mime.eol(0, msg, nl) end)
+    end
+    return socket_ltn12.filter.chain((unpack or table.unpack)(t))
   end;
 
   ['quoted-printable'] = function(nl) 
-    local eol_normalize
-    if nl and nl ~= CRLF then
-      eol_normalize = function(msg) return mime.eol(0, msg, nl) end
-    end
-    return socket_ltn12.filter.chain(
+    local t = {
       -- socket_mime.normalize(), -- decode_content alwas set CRLF for this
       function(msg) return mime.unqp('', msg) end,
-      eol_normalize
-    )
+    }
+    if nl and nl ~= CRLF then
+      table.insert(t, function(msg) return mime.eol(0, msg, nl) end)
+    end
+    return socket_ltn12.filter.chain((unpack or table.unpack)(t))
   end;
 }
 
@@ -664,8 +662,12 @@ end
 
 end
 
-function mime:as_raw_string()
-  return table.concat(self.message_, '\r\n', self.bound_[1], self.bound_[2])
+function mime:as_string(nl)
+  return table.concat(self.message_, nl or CRLF, self.bound_[1], self.bound_[2])
+end
+
+function mime:as_table()
+  return slice(self.message_, self.bound_[1], self.bound_[2])
 end
 
 function mime:id()
@@ -823,22 +825,6 @@ function mime:text()
   return self:collect_if(self.is_text, grab_text)
 end
 
-function mime:as_table()
-  local result = {headers = self.headers:as_table()}
-  if self:is_data() then
-    result.body = self.content:as_table()
-    return result;
-  end
-  if self:is_multi() then 
-    result.body = {}
-    for k, part in ipairs(self.content.content_) do
-      local t = part:as_table()
-      table.insert(result.body, t)
-    end
-  end
-  return result
-end
-
 setmetatable(mime,{__call = function (self, msg, index_begin, index_end)
   index_begin, index_end = index_begin or 1, index_end or #msg
   local result = setmetatable({},{__index = self}) -- clone(self)
@@ -859,26 +845,26 @@ end
 --------------------------------------------------------------------------
 
 local setmetatable = setmetatable
-module('pop3.message')
+local M = {}
 
-function set_cp(cp) DEFAULT_LOCAL_CP = cp end
+function M.set_cp(cp) DEFAULT_LOCAL_CP = cp end
 
 -- conv(target_charset, base_charset, str)
-function set_cp_converter(conv) CP = (conv or DEFAULT_CP_CONV) end
+function M.set_cp_converter(conv) CP = (conv or DEFAULT_CP_CONV) end
 
-function set_eol(nl) DEFAULT_NL = nl end
+function M.set_eol(nl) DEFAULT_NL = nl end
 
-function cp() return DEFAULT_LOCAL_CP end
+function M.cp() return DEFAULT_LOCAL_CP end
 
-function cp_converter() return CP end
+function M.cp_converter() return CP end
 
-function eol() return DEFAULT_NL end
+function M.eol() return DEFAULT_NL end
 
-setmetatable(_M, {__call = function(self, ...)
+setmetatable(M, {__call = function(self, ...)
   return mime(...)
 end})
 
-return _M
+return M
 
 --[[
 mime

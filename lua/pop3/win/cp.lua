@@ -165,12 +165,14 @@ local WINDOWS_CODE_PAGES = {
   [65001] = "utf-8"; -- Unicode (UTF-8)
 }
 
-module (...)
+local M = {}
 
-function GetLocalCPCode()
+function M.GetLocalCPCode()
   return LOCAL_CP or DEFAULT_CP
 end
 
-function GetLocalCPName()
+function M.GetLocalCPName()
   return WINDOWS_CODE_PAGES[ LOCAL_CP or DEFAULT_CP ]
 end
+
+return M

@@ -1,4 +1,4 @@
-require "pop3"
+local pop3 = require "pop3"
 
 DIRSEP = package.config:sub(1,1)
 
