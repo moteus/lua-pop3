@@ -99,8 +99,14 @@ local function as_date(str) return str end
 --  оба параметра не обязытельные
 local get_address_list do
 
-if pcall( require, "re" ) then
+local function prequire(...)
+  local ok, mod = pcall(require, ...)
+  return ok and mod, mod
+end
 
+local re = prequire "re"
+
+if re then
 -- @todo unquot quoted name
 local mail_pat = re.compile[[
   groups            <- (group (%s* ([,;] %s*)+ group)*) -> {}
@@ -295,11 +301,11 @@ test([[<aaa@mail.ru>, "Info Mail List" <bbb@mail.ru>, Сакен Матов <saken@from.kz
   }
 )
 
-if lunatest then
-
+if POP3_SELF_TEST then
+  local lunit = require"lunit"
   function test_pop3_messege_get_address_list()
     for _, test_case in ipairs(tests) do
-      assert_true(cmp_t(get_address_list(test_case[1]),test_case.result),test_case[1])
+      lunit.assert_true(cmp_t(get_address_list(test_case[1]),test_case.result),test_case[1])
     end
   end
 

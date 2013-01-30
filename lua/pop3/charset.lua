@@ -32,20 +32,6 @@ if ok then
   end
 end
 
-local function self_test(_M)
-  if lunatest and iconv then -- test
-    local str_1251 = "привет"
-    local str_866  = "ЇаЁўҐв"
-    function test_pop3_charset()
-      assert_true(_M.supported('cp1251','cp866'))
-      assert_equal(str_1251, _M.cp1251.cp866(str_866))
-      assert_equal(str_1251, _M['cp1251']['cp866'](str_866))
-      assert_equal(str_1251, _M('cp1251','cp866')(str_866))
-      assert_equal(_M('cp1251','cp866'), _M.cp1251.cp866)
-    end
-  end
-end
-
 local M = {}
 
 function M.supported(to, from)
@@ -57,7 +43,5 @@ function M.convert(to, from, str)
 end
 
 setmeta(M, meta)
-
-self_test(M)
 
 return M

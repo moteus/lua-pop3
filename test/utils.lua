@@ -1,4 +1,7 @@
 local pop3 = require "pop3"
+local lunit = require "lunit"
+
+local assert_equal, assert_not_equal = lunit.assert_equal, lunit.assert_not_equal
 
 DIRSEP = package.config:sub(1,1)
 

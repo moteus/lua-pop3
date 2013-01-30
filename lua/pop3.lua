@@ -44,7 +44,12 @@
 
 --- @section end -- Connection
 
-local _, message = pcall(require, "pop3.message")
+local function prequire(...)
+  local ok, mod = pcall(require, ...)
+  return ok and mod, mod
+end
+
+local message = prequire "pop3.message"
 
 local DEBUG = 
 -- function(...) print(...) io.flush() end or
@@ -52,15 +57,15 @@ function(...)  end
 
 local b64enc, b64dec
 
-local ok, mime = pcall(require, "mime")
-if ok then b64enc,b64dec = mime.b64, mime.unb64
-else local ok, base64 = pcall(require, "base64")
-if ok then b64enc,b64dec = base64.encode, base64.decode
+local mime = prequire "mime"
+if mime then b64enc,b64dec = mime.b64, mime.unb64
+else local base64 = prequire "base64"
+if base64 then b64enc,b64dec = base64.encode, base64.decode
 end end
 
 local md5_hmac, md5_digest
-local ok, crypto = pcall(require, "crypto")
-if ok then
+local crypto = prequire "crypto"
+if crypto then
 
   md5_hmac = function (key,value)
     return crypto.hmac.digest("md5", value, key)
@@ -70,13 +75,16 @@ if ok then
     return crypto.evp.digest("md5", str)
   end
 
-elseif pcall(require, "digest") then
+end
+
+if not md5_digest and prequire "digest" then
 
   md5_digest = function (str)
     return md5.digest(str)
   end
 
-  if pcall(require, "bit")then
+  local bit = prequire("bit") or prequire("bit32")
+  if bit then
     local bxor = bit.bxor
 
     local function hmac_key( hash, blocksize, key )
@@ -114,8 +122,8 @@ local default_connect = function()
   return nil, 'default network transport is not loaded'
 end
 
-local ok, socket  = pcall(require, "socket")
-if ok then default_connect = socket.connect end
+local socket  = prequire "socket"
+if socket then default_connect = socket.connect end
 
 local tls_connect 
 if socket then 

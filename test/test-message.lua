@@ -1,6 +1,30 @@
-local lunatest = require "lunatest"
-local pop3 = require "pop3"
+POP3_SELF_TEST = true
+local lunit = require "lunit"
+local pop3  = require "pop3"
 require "utils"
+
+local TEST_NAME = "pop3 internal test"
+if _VERSION >= 'Lua 5.2' then  _ENV = lunit.module(TEST_NAME,'seeall')
+else module( TEST_NAME, package.seeall, lunit.testcase ) end
+
+function test_pop3_charset()
+  local charset  = require "pop3.charset"
+  local str_1251 = "ïðèâåò"
+  local str_866  = "¯à¨¢¥â"
+  assert_true(charset.supported('cp1251','cp866'))
+  assert_equal(str_1251, charset.cp1251.cp866(str_866))
+  assert_equal(str_1251, charset['cp1251']['cp866'](str_866))
+  assert_equal(str_1251, charset('cp1251','cp866')(str_866))
+  assert_equal(charset('cp1251','cp866'), charset.cp1251.cp866)
+end
+
+function test_pop3_message()
+  test_pop3_messege_get_address_list()
+end
+
+local TEST_NAME = "Test message convert"
+if _VERSION >= 'Lua 5.2' then  _ENV = lunit.module(TEST_NAME,'seeall')
+else module( TEST_NAME, package.seeall, lunit.testcase ) end
 
 function test_message_1()
   local file_dir = path_join('tests','test1')
@@ -79,6 +103,10 @@ function test_message_2()
   assert_equal( msg.headers:header('content-type'):param('boundary'), "b1_aea1838717659e8f3203cc99e1406622", 'get header param via header')
   assert_equal( msg.headers:header('content-type'), msg:header('content-type'), 'get header via mime')
 end
+
+local TEST_NAME = "Test pop3 protocol"
+if _VERSION >= 'Lua 5.2' then  _ENV = lunit.module(TEST_NAME,'seeall')
+else module( TEST_NAME, package.seeall, lunit.testcase ) end
 
 function test_pop3_cmd()
   local test_session = {
@@ -192,9 +220,9 @@ function test_pop3_capa()
   local mbox = pop3.new(new_test_server(test_session))
   assert_true( mbox:open('127.0.0.1', '110') )
   assert_false( mbox:has_apop() )
-  assert_false( mbox:capa() )
-
+  local ok, err = mbox:capa()
+  assert_nil( ok )
+  assert_equal(' Invalid command in current state.', err)
 end
 
-
-lunatest.run(true)
+lunit.run()
