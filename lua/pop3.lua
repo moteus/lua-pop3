@@ -65,13 +65,13 @@ end end
 
 local md5_hmac, md5_digest
 local crypto = prequire "crypto"
-if crypto then
+if crypto and (crypto.evp and crypto.evp.digest or crypto.digest) then
 
   md5_hmac = function (key,value)
     return crypto.hmac.digest("md5", value, key)
   end
 
-  local digest = crypto.evp.digest or crypto.digest
+  local digest = crypto.evp and crypto.evp.digest or crypto.digest
   md5_digest = function (str)
     return digest("md5", str)
   end
