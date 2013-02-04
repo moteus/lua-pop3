@@ -18,7 +18,8 @@ end
 
 function load_msg_file(f)
   local m = {}
-  for str in io.lines(f) do
+  local data = assert(read_file(f))
+  for str in data:gmatch("(.-)\r?\n") do
     table.insert(m,str)
   end
   return load_msg_table(m)
