@@ -71,8 +71,9 @@ if crypto then
     return crypto.hmac.digest("md5", value, key)
   end
 
+  local digest = crypto.evp.digest or crypto.digest
   md5_digest = function (str)
-    return crypto.evp.digest("md5", str)
+    return digest("md5", str)
   end
 
 end
