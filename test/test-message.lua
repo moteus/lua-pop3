@@ -132,6 +132,7 @@ function test_message_2()
   assert_equal( msg.content[2]:charset(), "utf-8")
   assert_equal( msg.content[1]:type(), "text/plain")
   assert_equal( msg.content[2]:type(), "text/html")
+  msg:set_cp("utf-8")
 
   assert_equal( #msg:text(), 2 )
   assert_str_file( msg:text()[1].text,  path_join(file_dir, 'text.txt') , 'plain text/plain')
