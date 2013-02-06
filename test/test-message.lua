@@ -1,6 +1,10 @@
 POP3_SELF_TEST = true
 local lunit = require "lunit"
 local pop3  = require "pop3"
+local charset = require "pop3.charset"
+
+local IS_LUA52 = (_VERSION >= 'Lua 5.2')
+
 require "utils"
 
 local TEST_NAME = "pop3 internal test"
@@ -8,7 +12,10 @@ if _VERSION >= 'Lua 5.2' then  _ENV = lunit.module(TEST_NAME,'seeall')
 else module( TEST_NAME, package.seeall, lunit.testcase ) end
 
 function test_pop3_charset()
-  local charset  = require "pop3.charset"
+  if charset.pass_thrue_only() then
+    return fail("you must install iconv library to support charset encoding")
+  end
+
   local str_1251 = "ïðèâåò"
   local str_866  = "¯à¨¢¥â"
   assert_true(charset.supported('cp1251','cp866'))
@@ -19,6 +26,11 @@ function test_pop3_charset()
 end
 
 function test_pop3_message()
+  local msg = pop3.message{}
+  if not msg.from_list then
+    return fail("you must install lpeg.re library to support parsing from/to/reply headers")
+  end
+
   test_pop3_messege_get_address_list()
 end
 
@@ -38,14 +50,6 @@ function test_message_1()
   assert_equal(msg:subject(), 'Äëÿ ñëóæáû ïåðñîíàëà (Êîíôåðåíöèÿ)')
   assert_equal(msg:from(), '"HR Capital" <dimitry@hr-capital.ru>')
   assert_equal(msg:to(), '"info" <info@some.mail.domain.ru>')
-  assert_true(is_equal(msg:from_list(), 
-    {{name='"HR Capital"';addr='dimitry@hr-capital.ru'}}
-  ), 'from list' )
-  assert_true(is_equal(msg:to_list(), 
-    {{name='"info"';addr='info@some.mail.domain.ru'}}
-  ), 'to list' )
-  assert_nil(msg:reply_list())
-  assert_true(is_equal({msg:from_address()}, {msg:reply_address()}), 'if replay nil then replay - from')
 
   assert_equal(#msg:text(), 2)
   assert_str_file( msg:text()[1].text, path_join(file_dir, 'text.txt') , 'quoted-printable decoding text/plain')
@@ -78,10 +82,38 @@ function test_message_1()
     assert_str_file(attach.data, path_join(file_dir, attach.file_name), 'base64 binary :' .. attach.file_name )
   end
 
+
+end
+
+function test_message_1_charset_encode()
+  local file_dir = path_join('tests','test1')
+  local msg = load_msg_file(path_join(file_dir, 'test.eml'))
+
+  if charset.pass_thrue_only() then
+    return fail("you must install iconv library to support charset encoding")
+  end
+
   -- change output code page
   msg:set_cp("866")
   assert_equal(msg:subject(), '„«ï á«ã¦¡ë ¯¥àá®­ «  (Š®­ä¥à¥­æ¨ï)', 'work only with iconv')
+end
 
+function test_message_1_parse_lists()
+  local file_dir = path_join('tests','test1')
+  local msg = load_msg_file(path_join(file_dir, 'test.eml'))
+
+  if not msg.from_list then
+    return fail("you must install lpeg.re library to support parsing from/to/reply headers")
+  end
+
+  assert_true(is_equal(msg:from_list(), 
+    {{name='"HR Capital"';addr='dimitry@hr-capital.ru'}}
+  ), 'from list' )
+  assert_true(is_equal(msg:to_list(), 
+    {{name='"info"';addr='info@some.mail.domain.ru'}}
+  ), 'to list' )
+  assert_nil(msg:reply_list())
+  assert_true(is_equal({msg:from_address()}, {msg:reply_address()}), 'if replay nil then replay - from')
 end
 
 function test_message_2()
@@ -91,6 +123,15 @@ function test_message_2()
   -- plain html
   -- multiple headers
   -- header vlues and params
+
+  assert_equal( msg:charset(), msg:cp())
+  assert_true ( msg.content.is_multi)
+  assert_equal( msg.content:parts(), 2)
+  if IS_LUA52 then assert_equal ( #msg.content, 2) end
+  assert_equal( msg.content[1]:charset(), "utf-8")
+  assert_equal( msg.content[2]:charset(), "utf-8")
+  assert_equal( msg.content[1]:type(), "text/plain")
+  assert_equal( msg.content[2]:type(), "text/html")
 
   assert_equal( #msg:text(), 2 )
   assert_str_file( msg:text()[1].text,  path_join(file_dir, 'text.txt') , 'plain text/plain')
@@ -164,9 +205,36 @@ function test_pop3_auth_apop()
   }
 
   local mbox = pop3.new(new_test_server(test_session))
+  if not mbox.auth_apop then
+    return fail("you must install one of this libraries to support auth_apop: LuaCrypto, lmd5 or md5")
+  end
+
   assert_true ( mbox:open())
   assert_true ( mbox:auth_apop('mrose','tanstaaf') )
 
+end
+
+function test_pop3_auth_cmd5()
+  -- RFC 2195
+  local test_session = {
+    o = {"+OK POP3 server ready <1896.697170952@dbc.mtview.ca.us>"};
+    i = {
+      {"AUTH CRAM-MD5\r\n"; "+ PDE4OTYuNjk3MTcwOTUyQHBvc3RvZmZpY2UucmVzdG9uLm1jaS5uZXQ+"};
+      {"dGltIGI5MTNhNjAyYzdlZGE3YTQ5NWI0ZTZlNzMzNGQzODkw\r\n"; "+OK 16 messages (26210 bytes)"};
+    };
+  }
+
+  local mbox = pop3.new(new_test_server(test_session))
+  if not mbox.auth_cmd5 then
+    return fail(
+      "you must install this libraries to support auth_cmd5: \n"
+      .. "    - socket.mime or base64 to support base64 encoding\n"
+      .. "    - LuaCrypto, lmd5 or md5 to support md5 encoding\n"
+      .. "    - LuaCrypto, bit or bit32 to support md5 hmac encoding"
+    )
+  end
+  assert_true ( mbox:open())
+  assert_true ( mbox:auth_cmd5('tim','tanstaaftanstaaf') )
 end
 
 function test_pop3_capa()

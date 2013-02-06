@@ -63,27 +63,44 @@ else local base64 = prequire "base64"
 if base64 then b64enc,b64dec = base64.encode, base64.decode
 end end
 
-local md5_hmac, md5_digest
+local md5_hmac, md5_digest, md5_sum
 local crypto = prequire "crypto"
-if crypto and (crypto.evp and crypto.evp.digest or crypto.digest) then
-
-  md5_hmac = function (key,value)
-    return crypto.hmac.digest("md5", value, key)
-  end
-
+if crypto then
   local digest = crypto.evp and crypto.evp.digest or crypto.digest
-  md5_digest = function (str)
-    return digest("md5", str)
+  if digest then 
+    md5_digest = function (str)
+      return digest("md5", str)
+    end
   end
 
+  if crypto.hmac and crypto.hmac.digest then
+    md5_hmac = function (key,value)
+      return crypto.hmac.digest("md5", value, key)
+    end
+  end
 end
 
 if not md5_digest and prequire "digest" then
-
-  md5_digest = function (str)
-    return md5.digest(str)
+  if md5 then
+    md5_digest = function (str) return md5.digest(str)       end
+    md5_sum    = function (str) return md5.digest(str, true) end
   end
+end
 
+if not md5_digest then
+  local md5 = prequire "md5"
+  if md5 then 
+    if md5.digest then
+      md5_digest = function(str) return md5.digest(str)       end
+      md5_sum    = function(str) return md5.digest(str, true) end
+    elseif md5.sumhexa then
+      md5_digest = function(str) return md5.sumhexa(str)   end
+      md5_sum    = function(str) return md5.sum(str, true) end
+    end
+  end
+end
+
+if md5_digest and not md5_hmac then
   local bit = prequire("bit") or prequire("bit32")
   if bit then
     local bxor = bit.bxor
@@ -102,21 +119,21 @@ if not md5_digest and prequire "digest" then
 
     local function hmac(hash, key, value, raw)
       local blocksize = 64
-      if     hash == 'md5'  then hash = assert(md5.digest)
-      elseif hash == 'sha1' then hash = assert(sha1.digest)
+      local hash_dig, hash_sum
+      if     hash == 'md5'  then hash_dig, hash_sum = md5_digest, md5_sum
+      -- elseif hash == 'sha1' then hash = assert(sha1.digest)
       else error("not supported.") end
 
       local key = hmac_key(hash, blocksize, key )
       local ikeypad = hmac_xor(key, 54)
       local okeypad = hmac_xor(key, 92)
-      return hash( okeypad .. hash( ikeypad .. value, true ), raw)
+      return hash_dig( okeypad .. hash_sum( ikeypad .. value ), raw)
     end
 
-    md5_hmac = function (key,value)
+    md5_hmac = function (key, value)
       return hmac('md5', key, value)
     end
   end
-
 end
 
 local default_connect = function()
@@ -370,6 +387,7 @@ function pop3:auth_apop(username, password)
   self.is_auth_ = ok
   return ok,err
 end
+
 end
 
 if b64enc then
@@ -418,9 +436,11 @@ function pop3:auth_crammd5(username, password)
   if not status then return nil, data end
 
   local nonce = b64dec(data)
-  DEBUG("NONCE:", nonce)
+  DEBUG("CMD5-CHALLENGE:", nonce)
   local dig   = md5_hmac(password, nonce)
+  DEBUG("CMD5-HMAC(SECRET):", dig)
   local str   = b64enc(username.. ' ' .. dig)
+  DEBUG("CMD5-RESPONSE:", dig)
   
   local ok, err = self:cmd(str)
   self.is_auth_ = ok

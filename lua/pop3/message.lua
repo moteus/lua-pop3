@@ -356,6 +356,23 @@ local mime_content_multipart = {}
 --------------------------------------------------------------------------
 do -- mime_content_multipart
 
+local mime_content_multipart_mt = {
+  __index = function(self, k)
+    if type(k) == 'number' then
+      return self.content_[k]
+    end
+    return mime_content_multipart[k]
+  end;
+
+  __len = function(self)
+    return #self.content_
+  end;
+}
+
+function mime_content_multipart:parts()
+  return #self.content_
+end
+
 setmetatable(mime_content_multipart,{__call = function (self, headers, msg, index_begin, index_end)
   assert(index_begin <= index_end)
   assert(index_end <= #msg)
@@ -367,7 +384,7 @@ setmetatable(mime_content_multipart,{__call = function (self, headers, msg, inde
 
   if #boundary > 72 then return nil, MIME_ERR_BOUNDARY_TOO_LONG end
 
-  local result = setmetatable({},{__index = self}) --clone(self)
+  local result = setmetatable({},mime_content_multipart_mt)
   result.is_multi = true
   result.content_ = {} -- array
   
