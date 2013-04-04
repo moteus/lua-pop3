@@ -1,3 +1,7 @@
+--- Try detect system default codepage.
+-- @module pop3.win.cp
+--
+
 local DEFAULT_CP = 1251
 local LOCAL_CP
 
@@ -177,10 +181,14 @@ local WINDOWS_CODE_PAGES = {
 
 local M = {}
 
+--- 
+-- @treturn number system codepage (e.g. 1251)
 function M.GetLocalCPCode()
   return LOCAL_CP or DEFAULT_CP
 end
 
+--- 
+-- @treturn string system codepage (e.g. 'windows-1251')
 function M.GetLocalCPName()
   return WINDOWS_CODE_PAGES[ LOCAL_CP or DEFAULT_CP ]
 end

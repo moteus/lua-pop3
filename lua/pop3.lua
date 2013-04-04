@@ -15,25 +15,25 @@
 
 --- 
 -- Internal type that used by `pop3` object.
--- This type can be provided by user via custom @{pop3.connect|connect} function.
+-- This type can be provided by user via custom `pop3.connect` method.
 -- @type Connection
 
 --- Recive data.
 --
 -- @function Connection:receive
--- @param pattern - must support only "*l" pattern
--- @return string - retrun recived string without eol
+-- @tparam string pattern must support only "*l" pattern
+-- @treturn string recived string without eol
 
 --- Send data.
 --
 -- @function Connection:send
--- @param msg - string to send
+-- @tparam string msg data to send
 -- @return not false
 
 --- Set timeout to io functions.
 -- 
 -- @function Connection:settimeout
--- @param tm - timeout to io functions in seconds
+-- @tparam number tm timeout to io functions in seconds
 -- @return not false
 
 --- Close and destroy `Connection` object.
@@ -43,6 +43,12 @@
 -- @return not false
 
 --- @section end -- Connection
+
+--- 
+-- @function ConnectCtor
+-- @tparam string host
+-- @tparam string|number port
+-- @treturn Connection
 
 local function prequire(...)
   local ok, mod = pcall(require, ...)
@@ -214,10 +220,19 @@ end
 
 -- Transport layer
 
+--- Set default connection constructor
+-- @tparam ConnectCtor connect_ctor 
 function pop3:set_connect_fn(connect_ctor)
   self.cnn_fn_ = connect_ctor
 end
 
+--- Open new session with POP3 server.
+-- 
+-- @tparam ConnectCtor cnn_fn 
+-- @tparam string host
+-- @tparam string|number port
+-- @tparam[opt] number timeout
+-- @return true if session established
 function pop3:open_with(cnn_fn, host, port, timeout)
   if self:is_open() then
     return true
@@ -242,10 +257,10 @@ end
 
 --- Open new session with POP3 server.
 -- 
--- @param host
--- @param port
--- @param timeout
--- return true if session established
+-- @tparam string host
+-- @tparam string|number port
+-- @tparam[opt] number timeout
+-- @return true if session established
 function pop3:open(...)
   return self:open_with(self.cnn_fn_ or default_connect, ...)
 end
@@ -342,7 +357,7 @@ function pop3:is_open()
 end
 
 --- 
--- @return true if session transaction stage otherwise false
+-- @return true if session in transaction stage otherwise false
 function pop3:is_auth()
   return self.is_auth_ == true
 end
@@ -363,7 +378,7 @@ end
 
 --- POP3 authentication.
 -- 
--- return true if authentication passed
+-- @return true if authentication passed
 function pop3:auth(username, password)
   assert(not self:is_auth())
   local ok, err = self:cmd("USER",username)
@@ -392,6 +407,10 @@ end
 
 if b64enc then
 
+--- POP3 AUTH PLAIN authentication.
+-- Supports only if detected base64 encode/decode functions
+--
+-- @return true if authentication passed
 function pop3:auth_plain(username, password)
   local auth64 = b64enc(
     username .. "\0" .. 
@@ -403,6 +422,10 @@ function pop3:auth_plain(username, password)
   return ok,err
 end
 
+--- POP3 AUTH LOGIN authentication.
+-- Supports only if detected base64 encode/decode functions
+--
+-- return true if authentication passed
 function pop3:auth_login(username, password)
   local user64 = b64enc(username)
   local pw64   = b64enc(password)
@@ -431,6 +454,12 @@ end
 
 if md5_hmac and b64enc then
 
+--- POP3 AUTH CRAM-MD5 authentication.
+-- Supports only if detected base64 encode/decode and md5 hmac functions
+--
+-- @function auth_cmd5
+-- @return true if authentication passed
+
 function pop3:auth_crammd5(username, password)
   local status, data = self:cmd("AUTH CRAM-MD5")
   if not status then return nil, data end
@@ -452,8 +481,10 @@ end
 
 -- commands
 
----
+--- Execute STAT command.
 --
+-- @treturn number number of messages
+-- @treturn number size of messages
 function pop3:stat()
   assert(self:is_auth())
   local ok, err = self:cmd("STAT")
@@ -465,31 +496,39 @@ function pop3:stat()
   return count, size 
 end
 
----
+--- Execute NOOP command.
 --
+-- @return true
 function pop3:noop()
   assert(self:is_auth())
   return self:cmd("NOOP")
 end
 
----
+--- Execute DELE command.
 --
+-- @tparam string msgid
+-- @return true
 function pop3:dele(msgid)
   assert(self:is_auth())
   assert(msgid)
   return self:cmd("DELE",msgid)
 end
 
----
+--- Execute RSET command.
 --
+-- @tparam string msgid
+-- @return true
 function pop3:rset(msgid)
   assert(self:is_auth())
   assert(msgid)
   return self:cmd("RSET",msgid)
 end
 
----
+--- Execute LIST command.
 --
+-- @tparam[opt] string msgid
+-- @return message number and size if msgid was given.
+-- @treturn table {[msgNo] = msgSize} for all messages.
 function pop3:list(msgid)
   assert(self:is_auth())
 
@@ -518,8 +557,11 @@ function pop3:list(msgid)
   return t, i
 end
 
----
+--- Execute UIDL command.
 --
+-- @tparam[opt] string msgid
+-- @return message number and ID if msgid was given.
+-- @treturn table {[msgNo] = msgID} for all messages.
 function pop3:uidl(msgid)
   assert(self:is_auth())
 
@@ -549,16 +591,21 @@ function pop3:uidl(msgid)
   return t, i
 end
 
----
+--- Execute RETR command.
 --
+-- @tparam string msgid
+-- @treturn table {line1, line2, ...} raw message (line by line)
 function pop3:retr(msgid)
   assert(self:is_auth())
   assert(msgid)
   return self:cmd_ex("RETR",msgid)
 end
 
----
+--- Execute TOP command.
 --
+-- @tparam string msgid
+-- @tparam number n
+-- @treturn table {line1, line2, ..., lineN} raw message (line by line)
 function pop3:top(msgid, n)
   assert(self:is_auth())
   assert(msgid)
@@ -566,8 +613,9 @@ function pop3:top(msgid, n)
   return self:cmd_ex("TOP", msgid, n)
 end
 
----
---
+--- Execute CAPA command.
+-- This command also add to result APOP flag.
+-- @treturn table {APOP=true,EXPIRE="NEVER",SASL={LOGIN=true;PLAIN=true}} options returned by command.
 function pop3:capa()
   assert(self:is_open())
   local capas = {}
@@ -602,8 +650,9 @@ end
 -- Retrive message object
 if message then
 
----
---
+--- Return message as `pop3.message` object
+--@treturn pop3.message
+--@see pop3.pop3:retr
 function pop3:message(msgid)
   local msg, err = self:retr(msgid)
   if not msg then return nil, err end
@@ -641,22 +690,25 @@ function pop3:make_iter(fn)
   return iter
 end
 
----
+--- Create iterator based on retr method.
 --
+-- @see pop3.pop3:retr
 function pop3:retrs()
   return self:make_iter(self.retr)
 end
 
----
---
+--- Create iterator based on top method.
+-- @tparam number n
+-- @see pop3.pop3:top
 function pop3:tops(n)
   return self:make_iter(function(self, msgid)
     return self:top(msgid, n)
   end)
 end
 
----
+--- Create iterator based on message method.
 --
+-- @see pop3.pop3:message
 function pop3:messages()
   return self:make_iter(self.message)
 end
@@ -667,9 +719,8 @@ local M = {}
 --- Create new `pop3` object.
 --
 -- @function pop3.new
--- @param conn_ctor - connection constructor
--- @treturn pop3 object
--- @see connect
+-- @tparam[opt=default_connect] ConnectCtor conn_ctor
+-- @treturn `pop3` object
 function M.new(...)
   return pop3:new(...)
 end

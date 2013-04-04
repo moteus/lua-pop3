@@ -1,3 +1,7 @@
+--- Implement class to decode mime messages
+-- @module pop3.message 
+--
+
 local DEFAULT_CP_CONV = require "pop3.charset" .convert
 local socket_mime     = require "mime" -- luasocket
 local socket_ltn12    = require "ltn12" -- luasocket
@@ -594,71 +598,111 @@ end
 --------------------------------------------------------------------------
 do -- mime
 
+---
+-- @type mime
+
 mime.cp_ = assert(DEFAULT_LOCAL_CP)
 mime.eol_ = assert(DEFAULT_NL)
 
+--- Return mime type
+-- return value of 'content-type' header
 function mime:type()
   return self.type_
 end
 
+--- Set target codepage 
+-- This codepage use when need decode text data.
 function mime:set_cp(cp)
   self:for_each(function(t) assert(t.cp_); t.cp_ = cp end)
 end
 
+--- Set target EOL
+-- This EOL use when need decode text data.
 function mime:set_eol(nl)
   self:for_each(function(t) assert(t.eol_); t.eol_ = nl end)
 end
 
+--- Retrun current codepage to decode.
+-- This is not codepage message itself.
 function mime:cp()
   return self.cp_
 end
 
+--- Retrun current EOL to decode.
+-- This is not EOL message itself.
 function mime:eol()
   return self.eol_
 end
 
+---
+--
 function mime:hvalue(key, def)
   return self.headers:value(key, def)
 end
 
+---
+--
 function mime:hparam(key, param, def)
   return self.headers:param(key, param, def)
 end
 
+---
+--
 function mime:header(key)
   return self.headers:header(key)
 end
 
+---
+--
 function mime:subject()
   return decode_str(self:cp(), self:charset(), self:hvalue("subject",''))
 end
 
+---
+-- @treturn string
 function mime:from()
   return decode_str(self:cp(), self:charset(), self:hvalue("from"))
 end
 
+---
+-- @treturn string
 function mime:to()
   return decode_str(self:cp(), self:charset(), self:hvalue("to"))
 end
 
+---
+-- @treturn string
 function mime:reply_to()
   return decode_str(self:cp(), self:charset(), self:hvalue("reply-to"))
 end
 
 if get_address_list then
 
+---
+-- Depends on lpeg library
+-- @treturn table {{name=...,addr=...}, ...}
 function mime:from_list()
   return get_address_list(self:from())
 end
 
+---
+-- Depends on lpeg library
+-- @treturn table {{name=...,addr=...}, ...}
 function mime:to_list()
   return get_address_list(self:to())
 end
 
+---
+-- Depends on lpeg library
+-- @treturn table {{name=...,addr=...}, ...}
 function mime:reply_list()
   return get_address_list(self:reply_to())
 end
 
+---
+-- Depends on lpeg library
+-- @treturn string address
+-- @treturn string name
 function mime:from_address()
   local t = self:from_list()
   if t then
@@ -670,6 +714,25 @@ function mime:from_address()
   end
 end
 
+---
+-- Depends on lpeg library
+-- @treturn string address
+-- @treturn string name
+function mime:to_address()
+  local t = self:to_list()
+  if t then
+    for _,k in ipairs(t) do
+      if k and k.addr then
+        return k.addr, k.name
+      end
+    end
+  end
+end
+
+---
+-- Depends on lpeg library
+-- @treturn string address
+-- @treturn string name
 function mime:reply_address()
   local t = self:reply_list()
   if t then
@@ -693,66 +756,96 @@ function mime:as_table()
   return slice(self.message_, self.bound_[1], self.bound_[2])
 end
 
+---
+--
 function mime:id()
   return self:hvalue("message-id", '')
 end
 
+---
+--
 function mime:date()
   local h = self:header("date")
   return h and as_date(h:value()) or ''
 end
 
+---
+--
 function mime:encoding()
   return self:hvalue("content-transfer-encoding")
 end
 
+---
+--
 function mime:charset()
   return self:hparam("content-type", "charset", self:cp())
 end
 
+---
+--
 function mime:content_name()
   local h = self:hparam("content-type", "name")
   if h then return decode_str(self:cp(), self:charset(), h) end
 end
 
+---
+--
 function mime:file_name()
   local h = self:hparam("content-disposition", "filename")
   if h then return decode_str(self:cp(), self:charset(), h) end
 end
 
+---
+--
 function mime:disposition()
   return self:hvalue("content-disposition")
 end
 
+---
+--
 function mime:is_application()
   return self:type():sub(1,11) == 'application'
 end
 
+---
+--
 function mime:is_text()
   return self:type():sub(1,4) == 'text'
 end
 
+---
+--
 function mime:is_truncated()
   return self.content.is_truncated
 end
 
+---
+--
 function mime:is_multi()
   return self.content.is_multi
 end
 
+---
+--
 function mime:is_data()
   return self.content.is_data
 end
 
+---
+--
 function mime:is_binary()
   return (not self:is_text()) and (not self:is_multi())
 end
 
+---
+--
 function mime:is_attachment()
   local h = self:disposition()
   return h and h:sub(1,10):lower() == 'attachment'
 end
 
+---
+--
 function mime:for_each(fn, ...)
   fn(self, ...)
   if self:is_multi() then 
@@ -763,6 +856,8 @@ function mime:for_each(fn, ...)
   end
 end
 
+---
+--
 function mime:decode_content()
   assert(self.content)
   if self:is_data() then
@@ -832,18 +927,26 @@ function mime:collect_if(pred, grab, t)
   return t
 end
 
+---
+--
 function mime:full_content()
   return self:collect(content_collector)
 end
 
+--- Return all attachments from message
+--
 function mime:attachments()
   return self:collect_if(self.is_attachment, grab_binary)
 end
 
+--- Return all binary parts of message
+--
 function mime:objects()
   return self:collect_if(self.is_binary, grab_binary)
 end
 
+--- Return text part of message
+--
 function mime:text()
   return self:collect_if(self.is_text, grab_text)
 end

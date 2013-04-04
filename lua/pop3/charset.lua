@@ -1,3 +1,8 @@
+---
+-- @module pop3.charset
+-- @local
+-- This is internal module to convert text from on charset to another
+
 local function pass_thrue(str) return str end
 local setmeta = setmetatable
 local assert = assert
