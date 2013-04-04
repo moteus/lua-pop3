@@ -5,11 +5,19 @@ local charset = require "pop3.charset"
 
 local IS_LUA52 = (_VERSION >= 'Lua 5.2')
 
+local skip      = function (msg) return function() lunit.fail("#SKIP: " .. msg) end end
+local TEST_CASE = function (name)
+  if not IS_LUA52 then
+    module(name, package.seeall, lunit.testcase)
+    setfenv(2, _M)
+  else
+    return lunit.module(name, 'seeall')
+  end
+end
+
 require "utils"
 
-local TEST_NAME = "pop3 internal test"
-if _VERSION >= 'Lua 5.2' then  _ENV = lunit.module(TEST_NAME,'seeall')
-else module( TEST_NAME, package.seeall, lunit.testcase ) end
+local _ENV = TEST_CASE"pop3 internal test"
 
 function test_pop3_charset()
   if charset.pass_thrue_only() then
@@ -34,9 +42,87 @@ function test_pop3_message()
   test_pop3_messege_get_address_list()
 end
 
-local TEST_NAME = "Test message convert"
-if _VERSION >= 'Lua 5.2' then  _ENV = lunit.module(TEST_NAME,'seeall')
-else module( TEST_NAME, package.seeall, lunit.testcase ) end
+local _ENV = TEST_CASE"pop3"
+
+function test_interface()
+  local mbox = assert(pop3.new())
+  assert_function(mbox.set_connect_fn)
+  assert_function(mbox.open)
+  assert_function(mbox.open_with)
+  assert_function(mbox.close)
+  assert_function(mbox.is_open)
+  assert_function(mbox.is_auth)
+  assert_function(mbox.has_apop)
+  assert_function(mbox.auth)
+  assert_function(mbox.stat)
+  assert_function(mbox.noop)
+  assert_function(mbox.dele)
+  assert_function(mbox.rset)
+  assert_function(mbox.list)
+  assert_function(mbox.uidl)
+  assert_function(mbox.retr)
+  assert_function(mbox.top)
+  assert_function(mbox.capa)
+  assert_function(mbox.retrs)
+  assert_function(mbox.tops)
+
+  -- assert_function(mbox.auth_apop)
+  -- assert_function(mbox.auth_plain)
+  -- assert_function(mbox.auth_login)
+  -- assert_function(mbox.auth_cmd5)
+
+  assert_function(mbox.message)
+  assert_function(mbox.messages)
+end
+
+local _ENV = TEST_CASE"Test message convert"
+
+function test_interface()
+  local file_dir = path_join('tests','test1')
+  local msg = load_msg_file(path_join(file_dir, 'test.eml'))
+  assert_function(msg.type)
+  assert_function(msg.type)
+  assert_function(msg.set_cp)
+  assert_function(msg.set_eol)
+  assert_function(msg.cp)
+  assert_function(msg.eol)
+  assert_function(msg.hvalue)
+  assert_function(msg.hparam)
+  assert_function(msg.header)
+  assert_function(msg.subject)
+  assert_function(msg.from)
+  assert_function(msg.to)
+  assert_function(msg.reply_to)
+  assert_function(msg.as_string)
+  assert_function(msg.as_table)
+  assert_function(msg.id)
+  assert_function(msg.date)
+  assert_function(msg.encoding)
+  assert_function(msg.charset)
+  assert_function(msg.content_name)
+  assert_function(msg.file_name)
+  assert_function(msg.disposition)
+  assert_function(msg.is_application)
+  assert_function(msg.is_text)
+  assert_function(msg.is_truncated)
+  assert_function(msg.is_multi)
+  assert_function(msg.is_data)
+  assert_function(msg.is_binary)
+  assert_function(msg.is_attachment)
+  assert_function(msg.for_each)
+  assert_function(msg.decode_content)
+  assert_function(msg.full_content)
+  assert_function(msg.attachments)
+  assert_function(msg.objects)
+  assert_function(msg.text)
+
+  -- assert_function(msg.from_list)
+  -- assert_function(msg.to_list)
+  -- assert_function(msg.reply_list)
+  -- assert_function(msg.from_address)
+  -- assert_function(msg.to_address)
+  -- assert_function(msg.reply_address)
+end
 
 function test_message_1()
   local file_dir = path_join('tests','test1')
@@ -146,9 +232,7 @@ function test_message_2()
   assert_equal( msg.headers:header('content-type'), msg:header('content-type'), 'get header via mime')
 end
 
-local TEST_NAME = "Test pop3 protocol"
-if _VERSION >= 'Lua 5.2' then  _ENV = lunit.module(TEST_NAME,'seeall')
-else module( TEST_NAME, package.seeall, lunit.testcase ) end
+local _ENV = TEST_CASE"Test pop3 protocol"
 
 function test_pop3_cmd()
   local test_session = {
