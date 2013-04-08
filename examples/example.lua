@@ -1,8 +1,8 @@
-require "pop3"
+local pop3 = require "pop3"
 
 local some_mail = {
   host     = os.getenv("LUA_MAIL_HOST") or '127.0.0.1';
-  username = os.getenv("LUA_MAIL_USER") or 'my@localhost.ru';
+  username = os.getenv("LUA_MAIL_USER") or 'me@host.local';
   password = os.getenv("LUA_MAIL_PASS") or 'mypassword';
 }
 
