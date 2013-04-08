@@ -7,10 +7,8 @@ source = {
 
 description = {
   summary = "Simple pop3 library",
-  detailed = [[
-  ]],
   homepage = "https://github.com/moteus/lua-pop3",
-  -- license = ""
+  license  = "MIT/X11",
 }
 
 dependencies = {
@@ -18,6 +16,7 @@ dependencies = {
   "luasocket >= 2.0",
   -- "lua-iconv >= 7.0",  -- optional
   -- "lua-crypto >= 0.2", -- optional
+  -- "lpeg >= 0.9",       -- optional
   -- "alien >= 0.7.0",    -- optional on windows
 }
 
