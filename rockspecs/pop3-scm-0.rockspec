@@ -6,7 +6,7 @@ source = {
 }
 
 description = {
-  summary = "Simple pop3 library",
+  summary = "Simple POP3 client library for Lua 5.1/5.2",
   homepage = "https://github.com/moteus/lua-pop3",
   license  = "MIT/X11",
 }
