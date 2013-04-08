@@ -99,8 +99,8 @@ local function as_date(str) return str end
 -- end
 
 -------------------------------------------------------------------------
--- разбирает заголовки to, from и т.д  в список структур {name=;addr=}
---  оба параметра не обязытельные
+-- СЂР°Р·Р±РёСЂР°РµС‚ Р·Р°РіРѕР»РѕРІРєРё to, from Рё С‚.Рґ  РІ СЃРїРёСЃРѕРє СЃС‚СЂСѓРєС‚СѓСЂ {name=;addr=}
+--  РѕР±Р° РїР°СЂР°РјРµС‚СЂР° РЅРµ РѕР±СЏР·С‹С‚РµР»СЊРЅС‹Рµ
 local get_address_list do
 
 local function prequire(...)
@@ -276,16 +276,16 @@ test([[name@some.mail.domain.ru <addr@some.mail.domain.ru>]],
   }
 )
 
-test([[MailList: рассылка номер 78236 <78236-response@maillist.ru>]],
+test([[MailList: СЂР°СЃСЃС‹Р»РєР° РЅРѕРјРµСЂ 78236 <78236-response@maillist.ru>]],
   {
     {
-      name = "MailList: рассылка номер 78236",
+      name = "MailList: СЂР°СЃСЃС‹Р»РєР° РЅРѕРјРµСЂ 78236",
       addr = "78236-response@maillist.ru"
     }
   }
 )
 
-test([[<aaa@mail.ru>, "Info Mail List" <bbb@mail.ru>, Сакен Матов <saken@from.kz>, "Evgeny Zhembrovsky \(ezhembro\)" <ezhembro@cisco.com> ]],
+test([[<aaa@mail.ru>, "Info Mail List" <bbb@mail.ru>, РЎР°РєРµРЅ РњР°С‚РѕРІ <saken@from.kz>, "Evgeny Zhembrovsky \(ezhembro\)" <ezhembro@cisco.com> ]],
   {
     {
       addr = "aaa@mail.ru"
@@ -295,7 +295,7 @@ test([[<aaa@mail.ru>, "Info Mail List" <bbb@mail.ru>, Сакен Матов <saken@from.kz
       addr = "bbb@mail.ru"
     },
     {
-      name = "Сакен Матов",
+      name = "РЎР°РєРµРЅ РњР°С‚РѕРІ",
       addr = "saken@from.kz"
     },
     {
