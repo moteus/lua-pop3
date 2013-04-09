@@ -6,6 +6,28 @@ POP3 client library for Lua 5.1 / 5.2
 ##Dependences##
 * [LuaSocket](http://www.impa.br/~diego/software/luasocket)
 
+###Decode text headers/content###
+* [iconv](http://ittner.github.com/lua-iconv)
+
+###Parse from/to/reply headers###
+* [lpeg](http://www.inf.puc-rio.br/~roberto/lpeg)
+
+###MD5 modules###
+* [lmd5](http://www.tecgraf.puc-rio.br/~lhf/ftp/lua/#lmd5)
+* or [md5](http://www.keplerproject.org/md5/index.html)
+
+###APOP auth###
+* [lua-crypto](http://luacrypto.luaforge.net)
+* or one of MD5 modules.
+
+###CRAM MD5 auth###
+* [lua-crypto](http://luacrypto.luaforge.net)
+* or one of MD5 modules and bit library.
+
+###Detect current codepage on Windows###
+* [alien](http://mascarenhas.github.io/alien)
+* or [FFI](https://github.com/jmckaskill/luaffi)
+
 ## Usage ##
 
 ```lua

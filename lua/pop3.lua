@@ -14,7 +14,7 @@
 -- @see new
 
 --- 
--- Internal type that used by `pop3` object.
+-- Internal type used by `pop3` object.
 -- This type can be provided by user via custom `pop3.connect` method.
 -- @type Connection
 
