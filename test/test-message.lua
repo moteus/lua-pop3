@@ -8,7 +8,6 @@ print("")
 POP3_SELF_TEST = true
 local lunit = require "lunit"
 local pop3  = require "pop3"
-pop3.message = require "pop3.message"
 local charset = require "pop3.charset"
 
 local IS_LUA52 = (_VERSION >= 'Lua 5.2')
