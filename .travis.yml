@@ -12,7 +12,7 @@ install:
   - sudo luarocks install luasocket
   - sudo luarocks install lunitx
   - sudo luarocks install lpeg
-  - sudo luarocks install lua-crypto
+  - sudo luarocks install luacrypto
   - sudo luarocks install lua-iconv
   - sudo luarocks make rockspecs/pop3-scm-0.rockspec
 
