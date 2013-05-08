@@ -8,6 +8,7 @@ print("")
 POP3_SELF_TEST = true
 local lunit = require "lunit"
 local pop3  = require "pop3"
+pop3.message = require "pop3.message"
 local charset = require "pop3.charset"
 
 local IS_LUA52 = (_VERSION >= 'Lua 5.2')
@@ -31,8 +32,8 @@ function test_pop3_charset()
     return fail("you must install iconv library to support charset encoding")
   end
 
-  local str_1251 = "привет"
-  local str_866  = "ЇаЁўҐв"
+  local str_1251 = "пїЅпїЅпїЅпїЅпїЅпїЅ"
+  local str_866  = "пїЅаЁўпїЅпїЅ"
   assert_true(charset.supported('cp1251','cp866'))
   assert_equal(str_1251, charset.cp1251.cp866(str_866))
   assert_equal(str_1251, charset['cp1251']['cp866'](str_866))
@@ -140,7 +141,7 @@ function test_message_1()
   -- eol
   
   assert_equal(msg:charset(), 'windows-1251')
-  assert_equal(msg:subject(), 'Для службы персонала (Конференция)')
+  assert_equal(msg:subject(), 'пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)')
   assert_equal(msg:from(), '"HR Capital" <dimitry@hr-capital.ru>')
   assert_equal(msg:to(), '"info" <info@some.mail.domain.ru>')
 
@@ -188,7 +189,7 @@ function test_message_1_charset_encode()
 
   -- change output code page
   msg:set_cp("866")
-  assert_equal(msg:subject(), '„«п б«г¦Ўл ЇҐаб®­ «  (Љ®­дҐаҐ­жЁп)', 'work only with iconv')
+  assert_equal(msg:subject(), 'пїЅпїЅпїЅ пїЅг¦ЎпїЅ пїЅпїЅпїЅб®­пїЅпїЅпїЅ (пїЅпїЅпїЅпїЅаҐ­пїЅпїЅ)', 'work only with iconv')
 end
 
 function test_message_1_parse_lists()
