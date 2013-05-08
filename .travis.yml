@@ -1,0 +1,26 @@
+language: erlang
+
+env:
+  - LUA=""
+
+branches:
+  only:
+    - master
+
+install:
+  - sudo apt-get install luarocks
+  - sudo luarocks install luasocket
+  - sudo luarocks install lunitx
+  - sudo luarocks install lpeg
+  - sudo luarocks install lua-crypto
+  - sudo luarocks install lua-iconv
+  - sudo luarocks make rockspecs/pop3-scm-0.rockspec
+
+script: "cd test && lunit.sh test-message.lua"
+
+notifications:
+  recipients:
+    - mimir@newmail.ru
+  email:
+    on_success: change
+    on_failure: always

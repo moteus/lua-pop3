@@ -1,3 +1,10 @@
+local HAS_RUNNER = not not lunit
+
+print("------------------------------------")
+print("Lua version: " .. (_G.jit and _G.jit.version or _G._VERSION))
+print("------------------------------------")
+print("")
+
 POP3_SELF_TEST = true
 local lunit = require "lunit"
 local pop3  = require "pop3"
@@ -378,4 +385,4 @@ function test_pop3_capa()
   assert_equal(' Invalid command in current state.', err)
 end
 
-lunit.run()
+if not HAS_RUNNER then lunit.run() end
