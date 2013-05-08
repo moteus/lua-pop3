@@ -1,7 +1,7 @@
 language: erlang
 
 env:
-  - LUA=""
+  - LUA="lua5.1"
 
 branches:
   only:
