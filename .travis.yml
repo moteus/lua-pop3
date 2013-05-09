@@ -19,8 +19,6 @@ install:
 script: "cd test && lunit.sh test-message.lua"
 
 notifications:
-  recipients:
-    - mimir@newmail.ru
   email:
     on_success: change
     on_failure: always
