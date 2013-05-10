@@ -26,7 +26,7 @@ before_install:
   - cd $TRAVIS_BUILD_DIR
 
 install:
-  - sudo luarocks install luasocket
+  - sudo luarocks install https://raw.github.com/moteus/luasocket/unstable/rockspecs/luasocket-2.0.2.mot-1.rockspec
   - sudo luarocks install lunitx
   - sudo luarocks install lpeg 0.10
   - sudo luarocks install luacrypto
