@@ -111,41 +111,48 @@ end
 local re = prequire "re"
 
 if re then
--- @todo unquot quoted name
-local mail_pat = re.compile[[
-  groups            <- (group (%s* ([,;] %s*)+ group)*) -> {}
-  group             <- (
-                          {:name: <phrase> :} %s* <addr>                  /
-                          {:name: <uq_phrase> :} %s* "<" <addr_spec> ">"  /
-                          <addr> %s* {:name: <phrase> :}                  /
-                          "<" <addr_spec> ">" %s* {:name: <uq_phrase> :}  /
-                          <addr>                                          /
-                          {:name: <phrase> :}                              
-                        ) -> {}
 
-  uq_phrase          <- <uq_atom> (%s+ <uq_atom>)*
-  uq_atom            <- [^<>,; ]+
+local function try_load_get_address_list()
+  -- @todo unquot quoted name
+  local mail_pat = re.compile[[
+    groups            <- (group (%s* ([,;] %s*)+ group)*) -> {}
+    group             <- (
+                            {:name: <phrase> :} %s* <addr>                  /
+                            {:name: <uq_phrase> :} %s* "<" <addr_spec> ">"  /
+                            <addr> %s* {:name: <phrase> :}                  /
+                            "<" <addr_spec> ">" %s* {:name: <uq_phrase> :}  /
+                            <addr>                                          /
+                            {:name: <phrase> :}                              
+                          ) -> {}
 
-  phrase            <- <word> ([%s.]+ <word>)* /  <quoted_string>
-  word              <- <atom> ! <domain_addr>
+    uq_phrase          <- <uq_atom> (%s+ <uq_atom>)*
+    uq_atom            <- [^<>,; ]+
 
-  atom              <- [^] %c()<>@,;:\".[]+
-  quoted_string     <- '"' ([^"\%nl] / "\" .)*  '"'
+    phrase            <- <word> ([%s.]+ <word>)* /  <quoted_string>
+    word              <- <atom> ! <domain_addr>
 
-  addr              <- <addr_spec> / "<" <addr_spec> ">"
-  addr_spec         <- {:addr: <addr_chars> <domain_addr> :}
-  domain_addr       <- "@" <addr_chars>
-  addr_chars        <- [%a%d%_][%a%d%_.-]*
-]]
+    atom              <- [^] %c()<>@,;:\".[]+
+    quoted_string     <- '"' ([^"\%nl] / "\" .)*  '"'
 
-get_address_list = function(str)
-  if (not str) or (str == '') then
-    return nil
+    addr              <- <addr_spec> / "<" <addr_spec> ">"
+    addr_spec         <- {:addr: <addr_chars> <domain_addr> :}
+    domain_addr       <- "@" <addr_chars>
+    addr_chars        <- [%a%d%_][%a%d%_.-]*
+  ]]
+
+  return function(str)
+    if (not str) or (str == '') then
+      return nil
+    end
+    return mail_pat:match(str)
   end
-  return mail_pat:match(str)
 end
 
-do -- test --
+local ok, fn = pcall(try_load_get_address_list)
+
+if ok then get_address_list = fn end
+
+if get_address_list then -- test --
 local cmp_t
 
 local function cmp_v(v1,v2)
@@ -312,9 +319,9 @@ if POP3_SELF_TEST then
       lunit.assert_true(cmp_t(get_address_list(test_case[1]),test_case.result),test_case[1])
     end
   end
+end
 
-else
-
+if POP3_DEBUG then
   for _,test_case in ipairs(tests)do
     local res = get_address_list(test_case[1])
     if not cmp_v(res, test_case.result ) then
@@ -327,11 +334,20 @@ else
       pprint(res)
     end
   end
-end -- lunatest --
+end
+
+--verify
+for _,test_case in ipairs(tests)do
+  local res = get_address_list(test_case[1])
+  if not cmp_v(res, test_case.result) then
+    get_address_list = nil
+  end
+end
 
 end -- test --
+
 end -- require "re" --
-end
+end -- get_address_list --
 -------------------------------------------------------------------------
 
 -------------------------------------------------------------------------

@@ -28,7 +28,7 @@ before_install:
 install:
   - sudo luarocks install https://raw.github.com/moteus/luasocket/unstable/rockspecs/luasocket-2.0.2.mot-1.rockspec
   - sudo luarocks install lunitx
-  - sudo luarocks install lpeg 0.10
+  - sudo luarocks install lpeg 0.10 || sudo luarocks install lpeg || echo 'skip'
   - sudo luarocks install luacrypto
   - sudo luarocks install lua-iconv
   - sudo luarocks make rockspecs/pop3-scm-0.rockspec
