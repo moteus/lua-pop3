@@ -137,7 +137,7 @@ local function try_load_get_address_list()
     addr              <- <addr_spec> / "<" <addr_spec> ">"
     addr_spec         <- {:addr: <addr_chars> <domain_addr> :}
     domain_addr       <- "@" <addr_chars>
-    addr_chars        <- [%a%d%_][%a%d%_.-]*
+    addr_chars        <- [_%a%d][-._%a%d]*
   ]]
 
   return function(str)
