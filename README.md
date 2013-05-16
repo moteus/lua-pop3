@@ -1,7 +1,7 @@
 lua-pop3
 ============
 ##Build status##
-[![Build Status](https://travis-ci.org/moteus/lua-pop3.png)](https://travis-ci.org/moteus/lua-pop3)
+[![Build Status](https://travis-ci.org/moteus/lua-pop3.png?branch=master)](https://travis-ci.org/moteus/lua-pop3)
 
 POP3 client library for Lua 5.1 / 5.2
 
