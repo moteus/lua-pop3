@@ -37,10 +37,10 @@ install:
   - sudo luarocks install https://raw.github.com/moteus/luasocket/unstable/rockspecs/luasocket-2.0.2.mot-1.rockspec
   # Test lpeg 10 with Kua 5.1 and last woth  Lua 5.2
   - if [ $LUA_VER = "5.1" ]; then 
-    sudo luarocks install lpeg 0.10
-  else
-    sudo luarocks install lpeg
-  fi
+      sudo luarocks install lpeg 0.10
+    else
+      sudo luarocks install lpeg
+    fi
   # build with Lua 5.2
   - sudo luarocks install https://raw.github.com/moteus/luacrypto/master/rockspecs/luacrypto-git-1.rockspec
   - sudo luarocks install lua-iconv
