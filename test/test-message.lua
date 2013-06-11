@@ -135,18 +135,18 @@ local function do_test_message_1(file_dir, msg)
   -- quoted-printable text
   -- base64 objects
   -- eol
-  
-  assert_equal(msg:charset(), 'windows-1251')
-  assert_equal(msg:subject(), 'Для службы персонала (Конференция)')
-  assert_equal(msg:from(), '"HR Capital" <dimitry@hr-capital.ru>')
-  assert_equal(msg:to(), '"info" <info@some.mail.domain.ru>')
 
-  assert_equal(#msg:text(), 2)
+  assert_equal('windows-1251',                         msg:charset())
+  assert_equal('Для службы персонала (Конференция)',   msg:subject())
+  assert_equal('"HR Capital" <dimitry@hr-capital.ru>', msg:from())
+  assert_equal('"info" <info@some.mail.domain.ru>',    msg:to())
+
+  assert_equal(2, #msg:text())
   assert_str_file( msg:text()[1].text, path_join(file_dir, 'text.txt') , 'quoted-printable decoding text/plain')
   assert_str_file( msg:text()[2].text, path_join(file_dir, 'text.html'), 'quoted-printable decoding text/html')
 
-  assert_equal(#msg:objects(), 4, 'number of binary objects')
-  assert_equal(#msg:attachments(), 1, 'number of attachment files')
+  assert_equal(4, #msg:objects(), 'number of binary objects')
+  assert_equal(1, #msg:attachments(), 'number of attachment files')
 
   for _, attach in ipairs( msg:objects() ) do
     assert_str_file(attach.data, path_join(file_dir, attach.file_name), 'base64 binary :' .. attach.file_name )
@@ -182,7 +182,7 @@ end
 function test_message_1_as_string()
   local file_dir = path_join('tests','test1')
   local data     = read_file(path_join(file_dir, 'test.eml'))
-  local msg      = assert(pop3.message(data))
+  local msg      = assert(new_message(data))
   do_test_message_1(file_dir, msg)
 end
 
