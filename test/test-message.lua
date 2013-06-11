@@ -131,10 +131,7 @@ function test_interface()
   -- assert_function(msg.reply_address)
 end
 
-function test_message_1()
-  local file_dir = path_join('tests','test1')
-  local msg = load_msg_file(path_join(file_dir, 'test.eml'))
-
+local function do_test_message_1(file_dir, msg)
   -- quoted-printable text
   -- base64 objects
   -- eol
@@ -174,8 +171,19 @@ function test_message_1()
   for _, attach in ipairs( msg:objects() ) do
     assert_str_file(attach.data, path_join(file_dir, attach.file_name), 'base64 binary :' .. attach.file_name )
   end
+end
 
+function test_message_1(msg)
+  local file_dir = path_join('tests','test1')
+  local msg = assert(load_msg_file(path_join(file_dir, 'test.eml')))
+  do_test_message_1(file_dir, msg)
+end
 
+function test_message_1_as_string()
+  local file_dir = path_join('tests','test1')
+  local data     = read_file(path_join(file_dir, 'test.eml'))
+  local msg      = assert(pop3.message(data))
+  do_test_message_1(file_dir, msg)
 end
 
 function test_message_1_charset_encode()

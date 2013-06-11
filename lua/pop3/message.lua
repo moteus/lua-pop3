@@ -67,6 +67,21 @@ local function slice(t, s, e)
   return u
 end
 
+local function split(str, sep, plain)
+  local b, res = 1, {}
+  while b <= #str do
+    local e, e2 = string.find(str, sep, b, plain)
+    if e then
+      table.insert(res, (string.sub(str, b, e-1)))
+      b = e2 + 1
+    else
+      table.insert(res, (string.sub(str, b)))
+      break
+    end
+  end
+  return res
+end
+
 local decode_str = function (target_charset, base_charset, str)
   if str == nil then return nil end
   if not str:find([[=%?([%w-]+)%?(.)%?(.-)%?=]]) then
@@ -1002,8 +1017,9 @@ function M.cp_converter() return CP end
 
 function M.eol() return DEFAULT_NL end
 
-setmetatable(M, {__call = function(self, ...)
-  return mime(...)
+setmetatable(M, {__call = function(self, msg, ...)
+  if type(msg) == "string" then msg = split(msg, CRLF, true) end
+  return mime(msg, ...)
 end})
 
 return M
