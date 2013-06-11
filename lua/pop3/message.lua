@@ -11,10 +11,10 @@ local DECODERS = {
   ['base64'] = function(nl) 
     local t = {
       -- socket_mime.normalize(), -- decode_content alwas set CRLF for this
-      function(msg) return mime.unb64('', msg) end,
+      function(msg) return socket_mime.unb64('', msg) end,
     }
     if nl and nl ~= CRLF then
-      table.insert(t, function(msg) return mime.eol(0, msg, nl) end)
+      table.insert(t, function(msg) return socket_mime.eol(0, msg, nl) end)
     end
     return socket_ltn12.filter.chain((unpack or table.unpack)(t))
   end;
@@ -22,10 +22,10 @@ local DECODERS = {
   ['quoted-printable'] = function(nl) 
     local t = {
       -- socket_mime.normalize(), -- decode_content alwas set CRLF for this
-      function(msg) return mime.unqp('', msg) end,
+      function(msg) return socket_mime.unqp('', msg) end,
     }
     if nl and nl ~= CRLF then
-      table.insert(t, function(msg) return mime.eol(0, msg, nl) end)
+      table.insert(t, function(msg) return socket_mime.eol(0, msg, nl) end)
     end
     return socket_ltn12.filter.chain((unpack or table.unpack)(t))
   end;
