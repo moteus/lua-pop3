@@ -34,7 +34,7 @@ install:
   # supports skip
   - sudo luarocks install https://raw.github.com/moteus/lunit/moteus-skip/rockspecs/lunitx-scm.mot.skip-0.rockspec
   - sudo luarocks install https://raw.github.com/moteus/luacrypto/master/rockspecs/luacrypto-git-1.rockspec
-  - sudo luarocks install https://raw.github.com/moteus/luasocket/moteus/rockspecs/luasocket-2.0.2.mot-1.rockspec
+  - sudo luarocks install https://raw.github.com/diegonehab/luasocket/master/luasocket-scm-0.rockspec
   # Test lpeg 10 with Lua 5.1 and last with  Lua 5.2
   - if [ $LUA_VER = "5.1" ]; then 
       sudo luarocks install lpeg 0.10;
