@@ -1,0 +1,13 @@
+name = "pop3"
+version = "0.1.4"
+
+desc = "A simple Lua wrapper for pthreads & WIN32 threads."
+author = "Alexey Melnichuk"
+license = "MIT/X11"
+url = "https://github.com/moteus/lua-pop3"
+maintainer = "Alexey Melnichuk"
+
+depends = {
+  "lua >= 5.1",
+  "luasocket >= 2.0"
+}
