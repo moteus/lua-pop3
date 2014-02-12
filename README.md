@@ -66,3 +66,6 @@ for k, msg in mbox:messages() do
   end
 end
 ```
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/moteus/lua-pop3/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
