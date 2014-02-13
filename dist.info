@@ -1,7 +1,7 @@
 name = "pop3"
 version = "0.1.4"
 
-desc = "A simple Lua wrapper for pthreads & WIN32 threads."
+desc = "Simple POP3 client library for Lua"
 author = "Alexey Melnichuk"
 license = "MIT/X11"
 url = "https://github.com/moteus/lua-pop3"
