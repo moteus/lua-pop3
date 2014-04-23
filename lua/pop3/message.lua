@@ -6,6 +6,7 @@ local DEFAULT_CP_CONV = require "pop3.charset" .convert
 local socket_mime     = require "mime" -- luasocket
 local socket_ltn12    = require "ltn12" -- luasocket
 local CP              = DEFAULT_CP_CONV
+local CRLF            = '\r\n'
 
 local DECODERS = {
   ['base64'] = function(nl) 
@@ -31,7 +32,6 @@ local DECODERS = {
   end;
 }
 
-local CRLF = '\r\n'
 
 local IS_WINDOWS = (package.config:sub(1,1) == '\\')
 
@@ -432,7 +432,7 @@ setmetatable(mime_content_multipart,{__call = function (self, headers, msg, inde
       i = i + 1
     end
     if i > index_end then break end
-    line = msg[i]
+    local line = msg[i]
 
     if line == (boundary_close) then 
       i = index_end + 1
@@ -587,7 +587,7 @@ function mime_headers:headers(key)
   return result
 end
 
-function mime_headers:as_table()
+function mime_headers:as_table(key)
   key = key and string.lower(key)
   local result = {}
   for i, h in ipairs (self.headers_) do

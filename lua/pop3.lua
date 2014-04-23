@@ -487,9 +487,9 @@ end
 -- @treturn number size of messages
 function pop3:stat()
   assert(self:is_auth())
-  local ok, err = self:cmd("STAT")
-  if not ok then return nil,err end
-  local count, size = split_2_numbers(err)
+  local status, data = self:cmd("STAT")
+  if not status then return nil, data end
+  local count, size = split_2_numbers(data)
   if not (count and size) then
     return nil, "Wrong Response:" .. data
   end
@@ -570,7 +570,7 @@ function pop3:uidl(msgid)
     if not status then return nil,data end
     local no, id = split_1_number(data)
     if not (no and id) then
-      return nil, "Wrong Response:" .. err
+      return nil, "Wrong Response:" .. data
     end
     return no,id
   end
