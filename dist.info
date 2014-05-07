@@ -1,5 +1,5 @@
 name = "pop3"
-version = "0.1.4"
+version = "0.1.5"
 
 desc = "Simple POP3 client library for Lua"
 author = "Alexey Melnichuk"
