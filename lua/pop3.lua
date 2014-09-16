@@ -516,12 +516,10 @@ end
 
 --- Execute RSET command.
 --
--- @tparam string msgid
 -- @return true
-function pop3:rset(msgid)
+function pop3:rset()
   assert(self:is_auth())
-  assert(msgid)
-  return self:cmd("RSET",msgid)
+  return self:cmd("RSET")
 end
 
 --- Execute LIST command.
