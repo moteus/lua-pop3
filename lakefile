@@ -1,42 +1,10 @@
-function run(file, cwd)
-  print()
-  print("run " .. file)
-  if not TESTING then
-    if cwd then lake.chdir(cwd) end
-    local status, code = utils.execute( LUA_RUNNER .. ' ' .. file )
-    if cwd then lake.chdir("<") end
-    print()
-    return status, code
-  end
-  return true, 0
-end
-
-function run_test(name, params)
-  local test_dir = J(ROOT, 'test')
-  local cmd = J(test_dir, name)
-  if params then cmd = cmd .. ' ' .. params end
-  local ok = run(cmd, test_dir)
-  print("TEST " .. cmd .. (ok and ' - pass!' or ' - fail!'))
-end
-
-J = J or path.join
-
 PROJECT = 'pop3'
 
-if LUA_VER == '5.2' then
-  LUA_DIR = ENV.LUA_DIR_5_2 or ENV.LUA_DIR
-  LUA_RUNNER = 'lua52'
-else
-  LUA_DIR = ENV.LUA_DIR
-  LUA_RUNNER = 'lua'
-end
-
-ROOT   = ROOT or J(LUA_DIR, 'libs', PROJECT)
-LUADIR = LUADIR or J(ROOT, 'lua')
+INITLAKEFILE()
 
 install = target('install', {
-  file.group{odir = LUADIR; src = J('lua', '*.*'); recurse=true};
-  file.group{odir = J(ROOT, 'test'), src = J('test','*.*'), recurse=true};
+  file.group{odir = LUADIR;              src = J('lua',     '*.*'); recurse=true};
+  file.group{odir = TESTDIR;             src = J('test',    '*.*'), recurse=true};
   file.group{odir = J(ROOT, 'examples'), src = J('examples','*.*'), recurse=true};
 })
 
