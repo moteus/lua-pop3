@@ -3,10 +3,11 @@ language: c
 env:
   global:
     - LUAROCKS=2.2.0
+    - LUA_CRYPTO=https://raw.github.com/moteus/luacrypto/master/rockspecs/luacrypto-git-1.rockspec
   matrix:
     - LUA=lua5.1
     - LUA=lua5.2
-    # - LUA=lua5.3
+    - LUA=lua5.3
     - LUA=luajit
 
 branches:
@@ -17,15 +18,24 @@ before_install:
   - bash .travis/setup_lua.sh
 
 install:
-  - sudo luarocks install luacov-coveralls --server=http://rocks.moonscript.org/dev
-  - sudo luarocks install lunitx --server=https://rocks.moonscript.org/manifests/moteus
-  - sudo luarocks install https://raw.github.com/moteus/luacrypto/master/rockspecs/luacrypto-git-1.rockspec
-  - sudo luarocks install luasocket
+  - sudo luarocks install luacov-coveralls
+  - sudo luarocks install lunitx
+  - sudo luarocks install https://raw.github.com/moteus/luacrypto/master/rockspecs/luacrypto-git-1.rockspec --deps-mode=none
   # Test lpeg 10 with Lua 5.1 and last with  Lua 5.2
   - if [ $LUA_VER = "5.1" ]; then 
       sudo luarocks install lpeg 0.10;
     else
       sudo luarocks install lpeg;
+    fi
+  - if [ $LUA_VER == "5.3" ]; then 
+      sudo luarocks install luasocket --deps-mode=none CFLAGS="-O2 -fPIC -DLUA_COMPAT_APIINTCASTS";
+    else
+      sudo luarocks install luasocket;
+    fi
+  - if [ $LUA_VER == "5.3" ]; then 
+      sudo luarocks install $LUA_CRYPTO --deps-mode=none CFLAGS="-O2 -fPIC -DLUA_COMPAT_APIINTCASTS";
+    else
+      sudo luarocks install $LUA_CRYPTO;
     fi
   - sudo luarocks install lua-iconv
   - sudo luarocks make rockspecs/pop3-scm-0.rockspec
