@@ -1,44 +1,42 @@
 language: c
 
-env:
-  global:
-    - LUAROCKS=2.2.0
-    - LUA_CRYPTO=https://raw.github.com/moteus/luacrypto/master/rockspecs/luacrypto-git-1.rockspec
-  matrix:
-    - LUA=lua5.1
-    - LUA=lua5.2
-    - LUA=lua5.3
-    - LUA=luajit
+sudo: false
 
-branches:
-  only:
-    - master
+matrix:
+  include:
+    - compiler: ": Lua51"
+      env: LUA="lua 5.1"
+    - compiler: ": Lua52"
+      env: LUA="lua 5.2"
+    - compiler: ": Lua53"
+      env: LUA="lua 5.3"
+    - compiler: ": LuaJIT20"
+      env: LUA="luajit 2.0"
+    - compiler: ": LuaJIT21"
+      env: LUA="luajit 2.1"
+
+cache:
+  directories:
+    - here
+    - $HOME/.cache/pip
 
 before_install:
-  - bash .travis/setup_lua.sh
+  - export CC=gcc
+  - pip install --user cpp-coveralls
+  - pip install --user hererocks
+  - hererocks here -r^ --$LUA
+  - export PATH=$PATH:$PWD/here/bin
 
 install:
-  - sudo luarocks install luacov-coveralls
-  - sudo luarocks install lunitx
-  - sudo luarocks install https://raw.github.com/moteus/luacrypto/master/rockspecs/luacrypto-git-1.rockspec --deps-mode=none
-  # Test lpeg 10 with Lua 5.1 and last with  Lua 5.2
-  - if [ $LUA_VER = "5.1" ]; then 
-      sudo luarocks install lpeg 0.10;
-    else
-      sudo luarocks install lpeg;
-    fi
-  - if [ $LUA_VER == "5.3" ]; then 
-      sudo luarocks install luasocket --deps-mode=none CFLAGS="-O2 -fPIC -DLUA_COMPAT_APIINTCASTS";
-    else
-      sudo luarocks install luasocket;
-    fi
-  - if [ $LUA_VER == "5.3" ]; then 
-      sudo luarocks install $LUA_CRYPTO --deps-mode=none CFLAGS="-O2 -fPIC -DLUA_COMPAT_APIINTCASTS";
-    else
-      sudo luarocks install $LUA_CRYPTO;
-    fi
-  - sudo luarocks install lua-iconv
-  - sudo luarocks make rockspecs/pop3-scm-0.rockspec
+  - luarocks show luasocket || luarocks install luasocket
+  - luarocks show lua-iconv || luarocks install lua-iconv
+  - luarocks show luacrypto || luarocks install luacrypto
+  - luarocks show lpeg      || luarocks install lpeg
+  - luarocks make rockspecs/pop3-scm-0.rockspec
+
+before_script:
+  - luarocks show luacov-coveralls || luarocks install luacov-coveralls
+  - luarocks show lunitx           || luarocks install lunitx
 
 script:
   - cd test
