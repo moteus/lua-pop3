@@ -26,9 +26,8 @@ cache:
 
 before_install:
   - export CC=gcc
-  - pip install --user cpp-coveralls
   - pip install --user hererocks
-  - hererocks here -r^ --$LUA
+  - hererocks here -r^ --$LUA --compat none
   - export PATH=$PATH:$PWD/here/bin
 
 install:
