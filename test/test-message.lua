@@ -262,6 +262,9 @@ function test_message_3()
   assert_true ( msg.content.is_multi)
   assert_equal( msg.content:parts(), 2)
 
+  msg:set_cp("windows-1251")
+  msg:set_eol("\r\n")
+
   local text = assert_table(msg:text())
   assert_equal( #text, 1 )
   assert_str_file( text[1].text, path_join(file_dir, 'text1.txt') , 'plain text/plain #1')
@@ -270,7 +273,10 @@ function test_message_3()
   assert_equal( #attachments, 1 )
 
   assert_equal('message/rfc822', attachments[1].type)
-  local msg = attachments[1].data
+  msg = attachments[1].data
+
+  msg:set_cp("windows-1251")
+  msg:set_eol("\r\n")
 
   text = assert_table(msg:text())
   assert_equal( #text, 2 )

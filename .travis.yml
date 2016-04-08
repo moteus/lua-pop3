@@ -30,7 +30,7 @@ before_install:
 install:
   - luarocks show luasocket || luarocks install luasocket
   - luarocks show lua-iconv || luarocks install lua-iconv
-  - luarocks show luacrypto || luarocks install luacrypto
+  - luarocks show luacrypto || luarocks install luacrypto || luarocks install lmd5
   - luarocks show lpeg      || luarocks install lpeg
   - luarocks make rockspecs/pop3-scm-0.rockspec
 

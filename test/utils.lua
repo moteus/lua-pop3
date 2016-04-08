@@ -1,5 +1,6 @@
 local pop3 = require "pop3"
 local lunit = require "lunit"
+local mime = require "mime"
 
 local assert_equal, assert_not_equal = lunit.assert_equal, lunit.assert_not_equal
 
@@ -67,7 +68,7 @@ function read_file(path)
 end
 
 function assert_str_file(str, fname, msg)
-  assert_equal(str, read_file(fname), msg)
+  assert_equal(mime.b64(read_file(fname)), mime.b64(str), msg)
 end
 
 function assert_not_str_file(str, fname, msg)
