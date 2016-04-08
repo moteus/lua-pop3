@@ -27,7 +27,11 @@ cache:
 before_install:
   - export CC=gcc
   - pip install --user hererocks
-  - hererocks here -r^ --$LUA --compat none
+  - if [ "$LUA" == "lua 5.1" ]; then
+      hererocks here -r^ --$LUA;
+    else
+      hererocks here -r^ --$LUA --compat none;
+    fi
   - export PATH=$PATH:$PWD/here/bin
 
 install:

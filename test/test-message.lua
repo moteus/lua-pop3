@@ -8,6 +8,9 @@ print("------------------------------------")
 print("")
 
 POP3_SELF_TEST = true
+
+require "utils"
+
 local lunit = require "lunit"
 local pop3  = require "pop3"
 local charset = require "pop3.charset"
@@ -23,8 +26,6 @@ local TEST_CASE = function (name)
     return lunit.module(name, 'seeall')
   end
 end
-local print = print
-require "utils"
 
 local _ENV = TEST_CASE"pop3 internal test"
 
