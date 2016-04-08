@@ -23,7 +23,7 @@ local TEST_CASE = function (name)
     return lunit.module(name, 'seeall')
   end
 end
-
+local print = print
 require "utils"
 
 local _ENV = TEST_CASE"pop3 internal test"
@@ -247,6 +247,35 @@ function test_message_2()
   assert_equal( msg.headers:param('content-type', 'boundary'), "b1_aea1838717659e8f3203cc99e1406622", 'get header param via headers')
   assert_equal( msg.headers:header('content-type'):param('boundary'), "b1_aea1838717659e8f3203cc99e1406622", 'get header param via header')
   assert_equal( msg.headers:header('content-type'), msg:header('content-type'), 'get header via mime')
+end
+
+function test_message_3()
+  local file_dir = path_join('tests','test3')
+  local msg = load_msg_file(path_join(file_dir, 'test.eml'))
+  -- mixed
+  -- - plain text
+  -- - message rfc822
+  --   - multipart/alternative
+  --     - plain text
+  --     - plain html
+
+  assert_true ( msg.content.is_multi)
+  assert_equal( msg.content:parts(), 2)
+
+  local text = assert_table(msg:text())
+  assert_equal( #text, 1 )
+  assert_str_file( text[1].text, path_join(file_dir, 'text1.txt') , 'plain text/plain #1')
+
+  local attachments = assert_table(msg:attachments())
+  assert_equal( #attachments, 1 )
+
+  assert_equal('message/rfc822', attachments[1].type)
+  local msg = attachments[1].data
+
+  text = assert_table(msg:text())
+  assert_equal( #text, 2 )
+  assert_str_file( text[1].text, path_join(file_dir, 'text2.txt') , 'plain text/plain #2')
+  assert_str_file( text[2].text, path_join(file_dir, 'html.html') , 'html text/html #1')
 end
 
 local _ENV = TEST_CASE"Test pop3 protocol"

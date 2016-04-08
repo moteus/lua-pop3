@@ -1,0 +1,5 @@
+Здравствуйте, lua-pop3.
+
+This is HTML part
+
+Good by

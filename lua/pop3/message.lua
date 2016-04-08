@@ -846,6 +846,12 @@ end
 
 ---
 --
+function mime:is_rfc822()
+  return self:type() == 'message/rfc822'
+end
+
+---
+--
 function mime:is_truncated()
   return self.content.is_truncated
 end
@@ -901,12 +907,24 @@ function mime:decode_content()
         data = algo(self:is_text() and self:eol())( content )
       end
     end
+
     if self:is_text() then
       local charset = self:charset()
       data = data or self.content:as_string(self:eol())
       if charset then return CP(self:cp(), charset, data) end
       return data
     end
+
+    if self:is_rfc822() then
+      if data then
+        data = split(data, CRLF, true)
+        data = mime(data)
+      else
+        data = mime(self.content.message_, self.content.bound_[1], self.content.bound_[2])
+      end
+      return data
+    end
+
     return data or self.content:as_string()
   end
   return self.content

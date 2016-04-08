@@ -1,0 +1,68 @@
+Date: Fri, 8 Apr 2016 13:23:42 +0300
+From: alexey@office.intelcom-tg.ru
+X-Priority: 3 (Normal)
+Message-ID: <562098717.20160408132342@office.intelcom-tg.ru>
+To: pbx@office.intelcom-tg.ru
+Subject: =?windows-1251?B?RndkOiDd8u4g8uXs4CDv6PH87OA=?=
+In-Reply-To: <614949810.20160408132110@moteus.fusionpbx.com>
+References: <614949810.20160408132110@moteus.fusionpbx.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="----------ABA21E99C7E62C"
+
+------------ABA21E99C7E62C
+Content-Type: text/plain; charset=windows-1251
+Content-Transfer-Encoding: quoted-printable
+
+=C7=E4=F0=E0=E2=F1=F2=E2=F3=E9=F2=E5, .
+
+=DD=F2=EE =EE=E1=F9=E8=E9 =F2=E5=EA=F1=F2
+------------ABA21E99C7E62C
+Content-Type: message/rfc822;
+ name="1.eml"
+Content-Disposition: attachment;
+ filename="1.eml"
+
+Return-Path: alexey@moteus.fusionpbx.com
+Received: from localhost (localhost [127.0.0.1])
+	by FREESWITCH01 with ESMTP
+	; Fri, 8 Apr 2016 13:21:10 +0300
+Date: Fri, 8 Apr 2016 13:21:10 +0300
+From: alexey@moteus.fusionpbx.com
+X-Priority: 3 (Normal)
+Message-ID: <614949810.20160408132110@moteus.fusionpbx.com>
+To: alexey@office.intelcom-tg.ru
+Subject: =?windows-1251?B?3fLuIPLl7OAg7+jx/Ozg?=
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+ boundary="----------1E102134357603BB"
+
+------------1E102134357603BB
+Content-Type: text/plain; charset=windows-1251
+Content-Transfer-Encoding: quoted-printable
+
+=C7=E4=F0=E0=E2=F1=F2=E2=F3=E9=F2=E5, lua-pop3.
+
+This is HTML part
+
+Good by
+------------1E102134357603BB
+Content-Type: text/html; charset=windows-1251
+Content-Transfer-Encoding: quoted-printable
+
+<html><head><title>&Yacute;&ograve;&icirc; &ograve;&aring;&igrave;&agrave; =
+&iuml;&egrave;&ntilde;&uuml;&igrave;&agrave;</title>
+<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dwindows-125=
+1">
+</head>
+<body>
+<span style=3D" font-family:'Courier New'; font-size: 9pt;">=C7=E4=F0=E0=E2=
+=F1=F2=E2=F3=E9=F2=E5, lua-pop3.<br>
+<br>
+<b>This is HTML part<br>
+<a style=3D" font-family:'arial'; font-size: 8pt; font-weight: normal;" hre=
+f=3D"mailto:alexey@moteus.fusionpbx.com"></a><br>
+</b><span style=3D" font-size: 8pt;">Good by</body>
+------------1E102134357603BB--
+
+------------ABA21E99C7E62C--
