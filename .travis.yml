@@ -47,7 +47,7 @@ before_script:
 
 script:
   - cd test
-  - lunit.sh -i lua$LUA_SFX test-message.lua
+  - lunit.sh test-message.lua
 
 after_success:
   - luacov-coveralls
