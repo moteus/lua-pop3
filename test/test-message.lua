@@ -283,7 +283,7 @@ function test_message_3()
   assert_equal( #attachments, 1 )
 
   assert_equal('message/rfc822', attachments[1].type)
-  msg = attachments[1].data
+  msg = assert(attachments[1].message)
 
   msg:set_cp("windows-1251")
   msg:set_eol("\r\n")
