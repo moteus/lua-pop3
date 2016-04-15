@@ -932,17 +932,20 @@ end
 
 local function grab_text(self)
   return{
-    text      = self:decode_content(),
-    type      = self:type()
+    text        = self:decode_content(),
+    type        = self:type(),
+    disposition = self:disposition()
   }
 end
 
 local function grab_binary(self)
+  local name = self:is_rfc822() and 'message' or 'data'
   return{
-    data      = self:decode_content(),
-    name      = self:content_name(),
-    file_name = self:file_name(),
-    type      = self:type()
+    [name]      = self:decode_content(),
+    name        = self:content_name(),
+    file_name   = self:file_name(),
+    type        = self:type(),
+    disposition = self:disposition()
   }
 end
 
