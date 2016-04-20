@@ -21,10 +21,12 @@ POP3 client library for Lua 5.1 / 5.2
 
 ###APOP auth###
 * [lua-crypto](http://luacrypto.luaforge.net)
+* or [openssl](https://github.com/zhaozg/lua-openssl)
 * or one of MD5 modules.
 
 ###CRAM MD5 auth###
 * [lua-crypto](http://luacrypto.luaforge.net)
+* or [openssl](https://github.com/zhaozg/lua-openssl)
 * or one of MD5 modules and bit library.
 
 ###Detect current codepage on Windows###

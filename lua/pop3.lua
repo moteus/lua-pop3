@@ -69,23 +69,46 @@ else local base64 = prequire "base64"
 if base64 then b64enc,b64dec = base64.encode, base64.decode
 end end
 
-local md5_hmac, md5_digest, md5_sum
-local crypto = prequire "crypto"
-if crypto then
-  local digest = crypto.evp and crypto.evp.digest or crypto.digest
-  if digest then 
-    md5_digest = function (str)
-      return digest("md5", str)
-    end
-  end
+local md5_hmac, md5_digest, md5_sum do
 
-  if crypto.hmac and crypto.hmac.digest then
-    md5_hmac = function (key,value)
-      return crypto.hmac.digest("md5", value, key)
+-- LuaCrypto
+if not md5_digest then
+  local crypto = prequire "crypto"
+  if crypto then
+    local digest = crypto.evp and crypto.evp.digest or crypto.digest
+    if digest then 
+      md5_digest = function (str)
+        return digest("md5", str)
+      end
+    end
+
+    if crypto.hmac and crypto.hmac.digest then
+      md5_hmac = function (key,value)
+        return crypto.hmac.digest("md5", value, key)
+      end
     end
   end
 end
 
+-- lua-openssl
+if not md5_digest then
+  local openssl = prequire "openssl"
+  if openssl then
+    if openssl.digest and openssl.digest.digest then
+      md5_digest = function (str)
+        return openssl.digest.digest("md5", str)
+      end
+    end
+
+    if openssl.hmac and openssl.hmac.digest then
+      md5_hmac = function (key,value)
+        return openssl.hmac.digest("md5", value, key)
+      end
+    end
+  end
+end
+
+-- lmd5 (old version)
 if not md5_digest and prequire "digest" then
   if md5 then
     md5_digest = function (str) return md5.digest(str)       end
@@ -93,6 +116,7 @@ if not md5_digest and prequire "digest" then
   end
 end
 
+-- lmd5 or lua-md5
 if not md5_digest then
   local md5 = prequire "md5"
   if md5 then 
@@ -106,6 +130,7 @@ if not md5_digest then
   end
 end
 
+-- Implement custom HMAC
 if md5_digest and not md5_hmac then
   local bit = prequire("bit") or prequire("bit32")
   if bit then
@@ -140,6 +165,8 @@ if md5_digest and not md5_hmac then
       return hmac('md5', key, value)
     end
   end
+end
+
 end
 
 local default_connect = function()
