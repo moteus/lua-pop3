@@ -2,18 +2,20 @@ pcall(require, "luacov")
 
 local HAS_RUNNER = not not lunit
 
-print("------------------------------------")
-print("Lua version: " .. (_G.jit and _G.jit.version or _G._VERSION))
-print("------------------------------------")
-print("")
-
 POP3_SELF_TEST = true
 
 require "utils"
 
-local lunit = require "lunit"
-local pop3  = require "pop3"
+local lunit   = require "lunit"
+local pop3    = require "pop3"
 local charset = require "pop3.charset"
+
+print("------------------------------------")
+print("Module    name: " .. pop3._NAME)
+print("Module version: " .. pop3._VERSION)
+print("Lua    version: " .. (_G.jit and _G.jit.version or _G._VERSION))
+print("------------------------------------")
+print("")
 
 local IS_LUA52 = (_VERSION >= 'Lua 5.2')
 
@@ -27,8 +29,10 @@ local TEST_CASE = lunit.TEST_CASE or function (name)
   end
 end
 
+local ENABLED = true
+
 -------------------------------------------------------------------------------
-local _ENV = TEST_CASE"pop3 internal test" do
+local _ENV = TEST_CASE"internal test" if ENABLED then
 
 function test_pop3_charset()
   if charset.pass_thrue_only() then
@@ -57,7 +61,7 @@ end
 -------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
-local _ENV = TEST_CASE"pop3" do
+local _ENV = TEST_CASE"api" if ENABLED then
 
 function test_interface()
   local mbox = assert(pop3.new())
@@ -88,13 +92,16 @@ function test_interface()
 
   assert_function(mbox.message)
   assert_function(mbox.messages)
+
+  assert_match("^%d+%.%d+%.%d+%-?", pop3._VERSION)
+  assert_equal("pop3",              pop3._NAME   )
 end
 
 end
 -------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
-local _ENV = TEST_CASE"Test message convert" do
+local _ENV = TEST_CASE"mime message decode" if ENABLED then
 
 function test_interface()
   local file_dir = path_join('tests','test1')
@@ -298,7 +305,7 @@ end
 -------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
-local _ENV = TEST_CASE"Test pop3 protocol" do
+local _ENV = TEST_CASE"protocol" if ENABLED then
 
 function test_pop3_cmd()
   local test_session = {

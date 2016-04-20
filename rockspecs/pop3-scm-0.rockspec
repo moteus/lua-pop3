@@ -34,6 +34,7 @@ build = {
 
   modules = {
     ["pop3" ]        = "lua/pop3.lua",
+    ["pop3.module"]  = "lua/pop3/module.lua",
     ["pop3.charset"] = "lua/pop3/charset.lua",
     ["pop3.message"] = "lua/pop3/message.lua",
   }

@@ -739,7 +739,7 @@ function pop3:messages()
 end
 
 --- @section end
-local M = {}
+local M = require "pop3.module"
 
 --- Create new `pop3` object.
 --
