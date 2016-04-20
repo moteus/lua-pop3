@@ -6,7 +6,7 @@ source = {
 }
 
 description = {
-  summary = "Simple POP3 client library for Lua 5.1/5.2",
+  summary = "Simple POP3 client library for Lua 5.1/5.2/5.3",
   homepage = "https://github.com/moteus/lua-pop3",
   license  = "MIT/X11",
 }
@@ -16,6 +16,8 @@ dependencies = {
   "luasocket >= 2.0",
   -- "lua-iconv >= 7.0",  -- optional
   -- "lua-crypto >= 0.2", -- optional
+  -- "openssl",           -- optional
+  -- "lmd5",              -- optional
   -- "lpeg >= 0.9",       -- optional
   -- "alien >= 0.7.0",    -- optional on windows
 }
@@ -39,6 +41,3 @@ build = {
     ["pop3.message"] = "lua/pop3/message.lua",
   }
 }
-
-
-
