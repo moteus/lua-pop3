@@ -1,35 +1,36 @@
 lua-pop3
 ============
-##Build status##
+## Build status ##
+[![Licence](http://img.shields.io/badge/Licence-MIT-brightgreen.svg)](LICENCE.txt)
 [![Build Status](https://travis-ci.org/moteus/lua-pop3.png?branch=master)](https://travis-ci.org/moteus/lua-pop3)
 [![Coverage Status](https://coveralls.io/repos/moteus/lua-pop3/badge.png)](https://coveralls.io/r/moteus/lua-pop3)
 
-POP3 client library for Lua 5.1 / 5.2
+POP3 client library for Lua 5.1 / 5.2 / 5.3
 
-##Dependences##
+## Dependences ##
 * [LuaSocket](http://www.impa.br/~diego/software/luasocket)
 
-###Decode text headers/content###
+### Decode text headers/content ###
 * [iconv](http://ittner.github.com/lua-iconv)
 
-###Parse from/to/reply headers###
+### Parse from/to/reply headers ###
 * [lpeg](http://www.inf.puc-rio.br/~roberto/lpeg)
 
-###MD5 modules###
+### MD5 modules ###
 * [lmd5](http://www.tecgraf.puc-rio.br/~lhf/ftp/lua/#lmd5)
 * or [md5](http://www.keplerproject.org/md5/index.html)
 
-###APOP auth###
+### APOP auth ###
 * [lua-crypto](http://luacrypto.luaforge.net)
 * or [openssl](https://github.com/zhaozg/lua-openssl)
 * or one of MD5 modules.
 
-###CRAM MD5 auth###
+### CRAM MD5 auth ###
 * [lua-crypto](http://luacrypto.luaforge.net)
 * or [openssl](https://github.com/zhaozg/lua-openssl)
 * or one of MD5 modules and bit library.
 
-###Detect current codepage on Windows###
+### Detect current codepage on Windows ###
 * [alien](http://mascarenhas.github.io/alien)
 * or [FFI](https://github.com/jmckaskill/luaffi)
 
@@ -77,6 +78,3 @@ for k, msg in mbox:messages() do
   print_msg(msg)
 end
 ```
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/moteus/lua-pop3/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
-
